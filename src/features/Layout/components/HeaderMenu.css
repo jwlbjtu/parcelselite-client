@@ -1,0 +1,57 @@
+.site-header {
+  max-height: 48px;
+  padding: 0;
+  margin-bottom: 26px;
+  background: #fff;
+}
+
+.menu .anticon {
+  margin-right: 8px;
+}
+
+.menu .ant-dropdown-menu-item {
+  min-width: 160px;
+}
+
+.right {
+  display: flex;
+  float: right;
+  height: 48px;
+  margin-left: auto;
+  overflow: hidden;
+}
+
+.right .action {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.right .action span {
+  vertical-align: middle;
+}
+
+.right .action:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.right .action .opened {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.right .search {
+  padding: 0 12px;
+}
+
+.right .search:hover {
+  background: transparent;
+}
+
+.right .account .avatar {
+  margin-right: 8px;
+  color: black;
+  vertical-align: top;
+}

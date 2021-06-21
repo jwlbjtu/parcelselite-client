@@ -1,0 +1,14 @@
+.rate-item {
+  border: solid 1px #aabbc3;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 10px 25px;
+}
+
+.rate-item:hover {
+  box-shadow: #aabbc3 0px 0px 0px 1px;
+}
+
+.rate-item.selected {
+  border: solid 3px #156dd3;
+}

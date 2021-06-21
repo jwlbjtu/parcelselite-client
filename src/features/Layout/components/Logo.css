@@ -1,0 +1,40 @@
+.logo-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo-collapsed {
+  height: 40px;
+  margin: 10px 18px;
+}
+
+.logo {
+  height: 40px;
+  margin: 16px;
+}
+
+.logo-text {
+  color: white;
+  margin-top: 0.5em;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.login-logo-container {
+  align-items: center;
+  cursor: pointer;
+}
+
+.login-logo {
+  height: 60px;
+  margin: 16px 16px 16px 0;
+}
+
+.login-logo-text {
+  color: black;
+  margin-top: 0.5em;
+  font-size: 28px;
+  font-weight: 600;
+}

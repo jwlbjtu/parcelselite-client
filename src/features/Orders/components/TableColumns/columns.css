@@ -1,0 +1,26 @@
+.ant-table-tbody > tr > td {
+  padding: 0 !important;
+}
+
+.default-column {
+  padding: 16px 8px;
+}
+
+.default-column:hover {
+  cursor: pointer;
+  background-color: rgb(233 238 242);
+}
+
+.icon-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ant-popover-message-title {
+  padding-left: 0 !important;
+}
+
+.dark-link {
+  color: rgb(21 109 211);
+}
