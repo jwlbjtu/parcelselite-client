@@ -22,7 +22,7 @@ const ItemsCardEmpty = ({
         <div>
           <FormattedMessage id="no_item" />
         </div>
-        {order.orderStatus !== OrderStatus.FULFILLED && (
+        {order.status !== OrderStatus.FULFILLED && (
           <Button
             type="link"
             icon={<PlusOutlined />}

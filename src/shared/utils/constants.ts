@@ -96,7 +96,7 @@ export enum DistanceUnit {
 
 export enum OrderStatus {
   PENDING = 'Pending',
-  FULFILLED = 'Fulfilled'
+  FULFILLED = 'Shipped'
 }
 
 export const COUNTRIES = {
@@ -282,12 +282,14 @@ export const SERVER_ROUTES = {
   USERS: '/users',
   CLIENTS: '/clients',
   BILLINGS: '/clientBillings',
+  CLIENT_SHIPMENTS: '/clientShipment',
   PRINT_FORMAT: '/printFormat',
   PACKAGE: '/packageUnit',
   ADDRESSES: '/clientAddress',
   ORDERS: '/orders',
   ORDER_ITEMS: '/items',
   SHIPMENTS: '/shipments',
+  MANIFEST: '/manifest',
   PRELOAD: '/preload',
   CSV: '/csv',
   STATIC: '/static'
@@ -301,8 +303,6 @@ export const DEFAULT_SERVER_HOST =
 export const CSV_SAMPLE_FILE = 'parcelselite_sample_csv.csv';
 
 export const CSV_TITLE_OPTIONS = [
-  { name: 'Order ID', value: 'orderId', required: false },
-  { name: 'Order Date', value: 'orderDate', required: false },
   { name: 'Recipient Name', value: 'recipientName', required: true },
   { name: 'Company', value: 'company', required: false },
   { name: 'Email', value: 'email', required: false },
@@ -313,17 +313,16 @@ export const CSV_TITLE_OPTIONS = [
   { name: 'State/Province', value: 'state', required: true },
   { name: 'Zip/Postal Code', value: 'zip', required: true },
   { name: 'Country', value: 'country', required: true },
-  { name: 'Item Title', value: 'itemTitle', required: false },
-  { name: 'Quantity', value: 'quantity', required: false },
-  { name: 'Item Weight', value: 'itemWeight', required: false },
-  { name: 'Item Weight Unit', value: 'itemWeightUnit', required: false },
-  { name: 'Item Price', value: 'itemValue', required: false },
-  { name: 'Item Currency', value: 'itemValueCurrency', required: false },
-  { name: 'SKU', value: 'sku', required: false },
-  { name: 'Order Weight', value: 'orderWeight', required: false },
-  { name: 'Order Weight Unit', value: 'orderWeightUnit', required: false },
-  { name: 'Order Amount', value: 'orderAmount', required: false },
-  { name: 'Order Currency', value: 'orderCurrency', required: false },
+  { name: 'Account Number', value: 'accountId', required: false },
+  { name: 'Service', value: 'service', required: false },
+  { name: 'Facility', value: 'facility', required: false },
+  { name: 'Package Type', value: 'packageType', required: false },
+  { name: 'Length', value: 'length', required: false },
+  { name: 'Width', value: 'width', required: false },
+  { name: 'Height', value: 'height', required: false },
+  { name: 'Dimention Unit', value: 'dimentionUnit', required: false },
+  { name: 'Weight', value: 'weight', required: false },
+  { name: 'Weight Unit', value: 'weightUnit', required: false },
   { name: 'Ignore', value: 'ignore', required: false }
 ];
 
@@ -398,3 +397,49 @@ export const B13A_OPTION: Record<string, string> = {
   SUMMARY_REPORTING: 'Summary reporting',
   NOT_REQUIRED: 'Not Required'
 };
+
+export const DHL_ECOMMERCE_SERVICES = [
+  { key: 'FLAT', name: 'DHL Smartmail Flats' },
+  { key: 'EXP', name: 'DHL Parcel Expedited' },
+  { key: 'MAX', name: 'DHL Parcel Expedited Max' },
+  { key: 'GND', name: 'DHL Parcel Ground' }
+];
+
+export const DHL_ECOMMERCE_INTL_SERVICES = [
+  { key: 'PLT', name: 'DHL Parcel International Direct' },
+  { key: 'PLY', name: 'DHL Parcel International Standard' },
+  { key: 'PKY', name: 'DHL Packet International' }
+];
+
+export const UPS_SERVICES = [
+  { key: '2nd Day Air', id: '02', name: 'UPS 2nd Day Air' },
+  { key: '2nd Day Air A.M.', id: '59', name: 'UPS 2nd Day Air A.M.' },
+  { key: '3 Day Select', id: '12', name: 'UPS 3 Day Select' },
+  { key: 'Ground', id: '03', name: 'UPS Ground' },
+  { key: 'Next Day Air', id: '01', name: 'UPS Next Day Air' },
+  { key: 'Next Day Air Early', id: '14', name: 'UPS Next Day Air Early' },
+  { key: 'Next Day Air Saver', id: '13', name: 'UPS Next Day Air Saver' },
+  { key: 'Surepost Light', id: '92', name: 'UPS Surepost Light' },
+  { key: 'Surepost', id: '93', name: 'UPS Surepost' }
+];
+
+export const UPS_INTL_SERVICES = [
+  { key: 'Express', id: '07', name: 'UPS Worldwide Express' },
+  { key: 'Expedited', id: '08', name: 'UPS Worldwide Expedited' },
+  { key: 'Saver', id: '65', name: 'UPS Worldwide Saver' }
+];
+
+export const USPS_SERVICES = [
+  { key: 'PMExpress', id: '3', name: 'Priority Mail Express' },
+  { key: 'PM', id: '1', name: 'Priority Mail' },
+  { key: 'FCM', id: '61', name: 'First Class Mail' }
+];
+
+export const USPS_INTL_SERVICES = [
+  {
+    key: 'PMExpress International',
+    id: '1',
+    name: 'Priority Mail Express International'
+  },
+  { key: 'PM International', id: '2', name: 'Priority Mail International' }
+];

@@ -90,7 +90,7 @@ const CreateOrderPage = (): ReactElement => {
         state: values['sender-state'],
         zip: values['sender-zip']
       },
-      recipient: {
+      toAddress: {
         name: values['recipient-name'],
         company: values['recipient-company'],
         email: values['recipient-email'],

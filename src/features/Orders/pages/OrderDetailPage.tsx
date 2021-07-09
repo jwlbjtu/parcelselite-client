@@ -1,7 +1,7 @@
 import {
+  Alert,
   Breadcrumb,
   Button,
-  Card,
   Col,
   Divider,
   Result,
@@ -12,38 +12,31 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
-import dayjs from 'dayjs';
-import 'dayjs/locale/en';
-import 'dayjs/locale/zh-cn';
-import zh_CN from 'antd/es/date-picker/locale/zh_CN';
-import en_US from 'antd/es/date-picker/locale/en_US';
+import uniqid from 'uniqid';
 import { Order } from '../../../custom_types/order-page';
 import {
-  selectLoading,
   selectOrders,
-  setShowBuyModal,
   setShowOrderAddressModal,
-  setShowSelectAddressModal,
-  updateOrderHanlder
+  setShowSelectAddressModal
 } from '../../../redux/orders/ordersSlice';
-import {
-  LOCALES,
-  OrderStatus,
-  UI_ROUTES
-} from '../../../shared/utils/constants';
+import { OrderStatus, UI_ROUTES } from '../../../shared/utils/constants';
 import ItemsCard from '../components/ItemsCard/ItemsCard';
 import PackageInfoCard from '../components/PackageInfoCard';
-import DatePicker from '../../../shared/components/DatePicker';
 import AddressCard from '../components/AddressCard/AddressCard';
 import { OrderAddress } from '../../../custom_types/address-page';
 import OrderAddressModal from '../components/AddressCard/OrderAddressModal';
 import SelectAddressModal from '../components/AddressCard/SelectAddressModal';
-import RatesCard from '../components/RatesCard/RatesCard';
-import BuyModal from '../components/BuyModal';
-import PurchasedModal from '../components/PurchasedModal';
-import { selectLanguage } from '../../../redux/i18n/intlSlice';
+import {
+  downloadFormsHandler,
+  downloadLabelsHandler,
+  downloadPackSlipHandler
+} from '../../../shared/utils/pdf.helpers';
 import CustomDeclarationCard from '../components/CustomDeclarationCard/CustomDeclarationCard';
 import { isOrderInternational } from '../../../shared/utils/helpers';
+import ServiceCard from '../components/ServiceCard/ServiceCard';
+import checkOrderRateErrors from '../../../shared/utils/order.helper';
+import { purchaseOrderHandler } from '../../../redux/user/userSlice';
+import { selectLabels } from '../../../redux/settings/settingSlice';
 
 interface ParamType {
   orderId: string | undefined;
@@ -53,8 +46,7 @@ const OrderDetailPage = (): ReactElement => {
   const dispatch = useDispatch();
   const { orderId } = useParams<ParamType>();
   const orders = useSelector(selectOrders);
-  const orderLoading = useSelector(selectLoading);
-  const language = useSelector(selectLanguage);
+  const labelSettings = useSelector(selectLabels);
   const [curOrder, setCurOrder] = useState<Order | undefined>();
   const [loading, setLoading] = useState(false);
   const [showReturn, setShowReturn] = useState(false);
@@ -62,13 +54,19 @@ const OrderDetailPage = (): ReactElement => {
     undefined
   );
   const [addressType, setAddressType] = useState('');
+  const [errors, setErrors] = useState<ReactElement[]>([]);
+  const [isTest, setIsTest] = useState<boolean>(false);
 
   useEffect(() => {
     setLoading(true);
     setCurAddress(undefined);
     setAddressType('');
+    setIsTest(false);
     const order = orders.find((item) => item.id === orderId);
     setCurOrder(order);
+    if (order && order.status !== OrderStatus.FULFILLED) {
+      setErrors(checkOrderRateErrors(order, false));
+    }
     setLoading(false);
   }, [orders, orderId]);
 
@@ -83,7 +81,7 @@ const OrderDetailPage = (): ReactElement => {
 
   const showAddressModalHandler = (data: OrderAddress, type: string) => {
     setCurAddress(data);
-    setAddressType(type);
+    setAddressType(type === 'recipient' ? 'toAddress' : type);
     dispatch(setShowOrderAddressModal(true));
   };
 
@@ -95,7 +93,7 @@ const OrderDetailPage = (): ReactElement => {
 
   const showSelectAddressModalHand = (data: OrderAddress, type: string) => {
     setCurAddress(data);
-    setAddressType(type);
+    setAddressType(type === 'recipient' ? 'toAddress' : type);
     dispatch(setShowSelectAddressModal(true));
   };
 
@@ -120,23 +118,62 @@ const OrderDetailPage = (): ReactElement => {
             <FormattedMessage id="orderDetails" />
           </Breadcrumb.Item>
         </Breadcrumb>
-        {curOrder !== undefined && (
+        {curOrder !== undefined && curOrder.status !== OrderStatus.FULFILLED && (
           <Button
-            disabled={
-              curOrder.selectedRate === undefined ||
-              curOrder.rates === undefined ||
-              curOrder.rates.length === 0
-            }
             style={{ float: 'right', margin: '0 50px 20px 10px' }}
             type="primary"
-            onClick={() => dispatch(setShowBuyModal(true))}
+            onClick={() => dispatch(purchaseOrderHandler(curOrder, isTest))}
+            disabled={errors && errors.length > 0}
+            loading={curOrder.labelLoading}
           >
-            {curOrder.orderStatus === OrderStatus.FULFILLED ? (
-              <FormattedMessage id="buy_again" />
-            ) : (
-              <FormattedMessage id="buy" />
-            )}
+            <FormattedMessage id="buy" />
           </Button>
+        )}
+        {curOrder !== undefined && (
+          <>
+            {((curOrder.items && curOrder.items.length > 0) ||
+              (curOrder.customItems && curOrder.customItems.length > 0)) && (
+              <Button
+                style={
+                  curOrder.status !== OrderStatus.FULFILLED
+                    ? { float: 'right', margin: '0 10px 20px 10px' }
+                    : { float: 'right', margin: '0 50px 20px 10px' }
+                }
+                type="primary"
+                onClick={() =>
+                  downloadPackSlipHandler(
+                    curOrder,
+                    labelSettings.packSlipSettings.format
+                  )
+                }
+              >
+                <FormattedMessage id="downloadPackSlip" />
+              </Button>
+            )}
+            {curOrder.forms && curOrder.forms.length > 0 && (
+              <Button
+                style={{ float: 'right', margin: '0 10px 20px 10px' }}
+                type="primary"
+                onClick={() => downloadFormsHandler(curOrder.forms, 'standard')}
+              >
+                <FormattedMessage id="download_forms" />
+              </Button>
+            )}
+            {curOrder.labels && curOrder.labels.length > 0 && (
+              <Button
+                style={{ float: 'right', margin: '0 10px 20px 10px' }}
+                type="primary"
+                onClick={() =>
+                  downloadLabelsHandler(
+                    curOrder.labels,
+                    labelSettings.labelSettings.format
+                  )
+                }
+              >
+                <FormattedMessage id="download_labels" />
+              </Button>
+            )}
+          </>
         )}
       </div>
 
@@ -145,57 +182,56 @@ const OrderDetailPage = (): ReactElement => {
         <div>
           {curOrder ? (
             <>
-              <BuyModal order={curOrder} />
-              <PurchasedModal order={curOrder} />
+              {errors.length > 0 && (
+                <Alert
+                  style={{ marginBottom: '25px' }}
+                  message={<FormattedMessage id="label_unavailable" />}
+                  description={
+                    <div>
+                      <strong>
+                        <FormattedMessage id="fix_following" />:
+                      </strong>
+                      <ul>
+                        {errors.map((ele, index) => (
+                          <li key={`${uniqid(index.toString())}`}>{ele}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  }
+                  type="warning"
+                  showIcon
+                />
+              )}
+              {curOrder.errors && curOrder.errors.length > 0 && (
+                <Alert
+                  style={{ marginBottom: '25px' }}
+                  message=""
+                  description={
+                    <ul>
+                      {curOrder.errors.map((ele, index) => (
+                        <li key={`${uniqid(index.toString())}`}>{ele}</li>
+                      ))}
+                    </ul>
+                  }
+                  type="error"
+                />
+              )}
               <Row gutter={20}>
+                <Col span={12}>
+                  <ServiceCard
+                    order={curOrder}
+                    isTest={isTest}
+                    testHandler={setIsTest}
+                  />
+                  <div id="package-info">
+                    <PackageInfoCard order={curOrder} />
+                  </div>
+                </Col>
                 <Col span={12}>
                   {isOrderInternational(curOrder) && (
                     <CustomDeclarationCard order={curOrder} />
                   )}
                   <ItemsCard order={curOrder} />
-                  <div id="package-info">
-                    <PackageInfoCard order={curOrder} />
-                  </div>
-                  <Card size="small" style={{ marginBottom: '20px' }}>
-                    <div style={{ marginBottom: '10px' }}>
-                      <strong>
-                        <FormattedMessage id="shipment_options" />
-                      </strong>
-                    </div>
-                    <div
-                      style={
-                        dayjs(curOrder.shipmentOptions.shipmentDate).isBefore(
-                          dayjs(),
-                          'day'
-                        )
-                          ? { color: 'red' }
-                          : {}
-                      }
-                    >
-                      <FormattedMessage id="shipment_date" />
-                    </div>
-                    <Spin spinning={orderLoading}>
-                      <DatePicker
-                        locale={language === LOCALES.CHINESE ? zh_CN : en_US}
-                        allowClear={false}
-                        style={{ minWidth: '188px' }}
-                        defaultValue={dayjs(
-                          curOrder.shipmentOptions.shipmentDate
-                        )}
-                        disabledDate={(currentDate) =>
-                          currentDate.isBefore(dayjs(), 'day')
-                        }
-                        onChange={(value) => {
-                          dispatch(
-                            updateOrderHanlder({
-                              id: curOrder.id,
-                              shipmentOptions: { shipmentDate: value }
-                            })
-                          );
-                        }}
-                      />
-                    </Spin>
-                  </Card>
                   <OrderAddressModal
                     orderId={curOrder.id}
                     address={curAddress}
@@ -210,7 +246,7 @@ const OrderDetailPage = (): ReactElement => {
                   />
                   <AddressCard
                     order={curOrder}
-                    address={curOrder.recipient}
+                    address={curOrder.toAddress}
                     title="Recipient"
                     showModal={showAddressModalHandler}
                   />
@@ -232,9 +268,6 @@ const OrderDetailPage = (): ReactElement => {
                       showSelectAddressModal={showSelectAddressModalHand}
                     />
                   )}
-                </Col>
-                <Col span={12}>
-                  <RatesCard order={curOrder} />
                 </Col>
               </Row>
             </>

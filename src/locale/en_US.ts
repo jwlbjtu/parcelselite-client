@@ -79,10 +79,13 @@ const enUS = {
   shipment_date_wrong: 'Shipment Date cannot be an old date.',
   refresh: 'Refresh',
   rate_unavailable: 'Rate Unavailable',
+  label_unavailable: 'Can not buy label',
   fix_following: 'Fix the following to get rate',
   cheapest: 'CHEAPEST',
   fastest: 'FASTEST',
   more_rates: 'MORE RATES',
+  // Service Card
+  service_title: 'Service',
   // Shipment Page
   shipments: 'Shipments',
   schedule_pickup: 'Schedule Pickup',
@@ -188,10 +191,13 @@ const enUS = {
   download_doc: 'Download',
   packing_slip: 'Packing Slip',
   download_labels: 'Download Labels',
+  download_forms: 'Download Invoice',
   // Common
   no_data: 'No Data',
   edit: 'Edit',
   name: 'Name',
+  firstName: 'FirstName',
+  lastName: 'LastName',
   company: 'Company',
   email: 'Email',
   phone: 'phone',

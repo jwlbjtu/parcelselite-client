@@ -1,5 +1,9 @@
 import { Rate } from '../../custom_types/order-page';
-import { CARRIERS, USPS_INTL_SERVICE_IDS_LIST } from './constants';
+import {
+  CARRIERS,
+  USPS_INTL_SERVICE_IDS_LIST,
+  USPS_SERVICES
+} from './constants';
 
 export const findCheapestRate = (rates: Rate[]): Rate => {
   let targetRate = rates[0];
@@ -57,13 +61,13 @@ export const findFastestRate = (
 export const getDisplayTracking = (
   carrier: string,
   tracking: string,
-  serviceId: string
+  service: string
 ): string => {
   if (
     carrier === CARRIERS.USPS &&
-    serviceId &&
-    serviceId.length > 0 &&
-    USPS_INTL_SERVICE_IDS_LIST.indexOf(serviceId) < 0
+    service &&
+    service.length > 0 &&
+    USPS_SERVICES.findIndex((ele) => ele.name === service) >= 0
   ) {
     return tracking.substring(8);
   }

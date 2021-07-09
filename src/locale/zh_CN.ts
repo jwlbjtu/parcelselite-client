@@ -56,7 +56,7 @@ const zhCN = {
   require_greater_zero: '数值不能为0',
   item_total: '总计',
   // Package Info
-  packageInfo: '包裹规格',
+  packageInfo: '包裹信息',
   custom_dimensions: '自定义包裹尺寸',
   dimentions: '包裹尺寸',
   dimentions_sub: '长 x 宽 x 高',
@@ -79,10 +79,13 @@ const zhCN = {
   shipment_date_wrong: '邮寄日期不能是过去的日期',
   refresh: '刷新',
   rate_unavailable: '无法获得邮寄价格',
+  label_unavailable: '无法购买面单',
   fix_following: '请更正以下问题再试',
   cheapest: '价格最低',
   fastest: '时效最快',
   more_rates: '更多选择',
+  // Service Card
+  service_title: '邮寄服务',
   // Shipment Page
   shipments: '邮寄信息',
   schedule_pickup: '预约取件',
@@ -185,10 +188,13 @@ const zhCN = {
   download_doc: '下载文件',
   packing_slip: '箱单文件',
   download_labels: '下载面单',
+  download_forms: '国际发票',
   // Common
   no_data: '暂无数据',
   edit: '修改',
   name: '姓名',
+  firstName: '名字',
+  lastName: '姓氏',
   company: '公司名称',
   email: '电子邮件',
   phone: '手机号码',

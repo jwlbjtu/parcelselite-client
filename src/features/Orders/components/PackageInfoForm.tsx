@@ -4,12 +4,7 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import convert from 'convert-units';
-import {
-  CloseCircleTwoTone,
-  MinusCircleOutlined,
-  MinusCircleTwoTone,
-  PlusOutlined
-} from '@ant-design/icons';
+import { CloseCircleTwoTone, PlusOutlined } from '@ant-design/icons';
 import { Order, PackageInfo } from '../../../custom_types/order-page';
 import {
   saveOrderPackageInfo,
@@ -17,9 +12,12 @@ import {
 } from '../../../redux/orders/ordersSlice';
 import { selectPackagesUnits } from '../../../redux/settings/settingSlice';
 import {
+  CARRIERS,
   DistanceUnit,
+  OrderStatus,
   PackageTypes,
   PACKAGE_TYPE_NAMES,
+  UPS_SERVICES,
   WeightUnit
 } from '../../../shared/utils/constants';
 
@@ -31,11 +29,11 @@ interface PackageFormData {
     length: number;
     width: number;
     height: number;
-    distenceUnit: DistanceUnit;
+    unitOfMeasure: DistanceUnit;
   };
   weight: {
     value: number;
-    weightUnit: WeightUnit;
+    unitOfMeasure: WeightUnit;
   };
 }
 
@@ -70,11 +68,11 @@ const PackageInfoForm = ({
         length: 0,
         width: 0,
         height: 0,
-        distenceUnit: packageSetting.distanceUnit
+        unitOfMeasure: packageSetting.distanceUnit
       },
       weight: {
         value: 0,
-        weightUnit: packageSetting.weightUnit
+        unitOfMeasure: packageSetting.weightUnit
       }
     };
 
@@ -84,25 +82,25 @@ const PackageInfoForm = ({
       formInitData.packageType = packInfo.packageType;
       formInitData.dimentions.length = parseFloat(
         convert(packDim.length)
-          .from(packDim.distenceUnit)
+          .from(packDim.unitOfMeasure)
           .to(packageSetting.distanceUnit)
           .toFixed(2)
       );
       formInitData.dimentions.width = parseFloat(
         convert(packDim.width)
-          .from(packDim.distenceUnit)
+          .from(packDim.unitOfMeasure)
           .to(packageSetting.distanceUnit)
           .toFixed(2)
       );
       formInitData.dimentions.height = parseFloat(
         convert(packDim.height)
-          .from(packDim.distenceUnit)
+          .from(packDim.unitOfMeasure)
           .to(packageSetting.distanceUnit)
           .toFixed(2)
       );
       formInitData.weight.value = parseFloat(
         convert(packInfo.weight.value)
-          .from(packInfo.weight.weightUnit)
+          .from(packInfo.weight.unitOfMeasure)
           .to(packageSetting.weightUnit)
           .toFixed(2)
       );
@@ -113,22 +111,22 @@ const PackageInfoForm = ({
         const result: PackageInfo = {
           packageType: ele.packageType,
           dimentions: {
-            distenceUnit: packageSetting.distanceUnit,
+            unitOfMeasure: packageSetting.distanceUnit,
             length: parseFloat(
               convert(packDim.length)
-                .from(packDim.distenceUnit)
+                .from(packDim.unitOfMeasure)
                 .to(packageSetting.distanceUnit)
                 .toFixed(2)
             ),
             width: parseFloat(
               convert(packDim.width)
-                .from(packDim.distenceUnit)
+                .from(packDim.unitOfMeasure)
                 .to(packageSetting.distanceUnit)
                 .toFixed(2)
             ),
             height: parseFloat(
               convert(packDim.height)
-                .from(packDim.distenceUnit)
+                .from(packDim.unitOfMeasure)
                 .to(packageSetting.distanceUnit)
                 .toFixed(2)
             )
@@ -136,11 +134,11 @@ const PackageInfoForm = ({
           weight: {
             value: parseFloat(
               convert(ele.weight.value)
-                .from(ele.weight.weightUnit)
+                .from(ele.weight.unitOfMeasure)
                 .to(packageSetting.weightUnit)
                 .toFixed(2)
             ),
-            weightUnit: packageSetting.weightUnit
+            unitOfMeasure: packageSetting.weightUnit
           }
         };
         return result;
@@ -178,9 +176,9 @@ const PackageInfoForm = ({
       onFinish={onFormSubmit}
       style={onOrderPage ? { minWidth: '500px' } : {}}
     >
-      <h3>Pakcage - 1</h3>
+      <h3>包裹 - 1</h3>
       <Form.Item name="packageType" required>
-        <Select>
+        <Select disabled={order.status === OrderStatus.FULFILLED}>
           <Option key="custom" value={PackageTypes.PKG}>
             {PACKAGE_TYPE_NAMES[PackageTypes.PKG]}
           </Option>
@@ -210,6 +208,7 @@ const PackageInfoForm = ({
             min={0}
             placeholder={intl.formatMessage({ id: 'length' })}
             precision={2}
+            disabled={order.status === OrderStatus.FULFILLED}
           />
         </Form.Item>
         <Form.Item>X</Form.Item>
@@ -232,6 +231,7 @@ const PackageInfoForm = ({
             min={0}
             placeholder={intl.formatMessage({ id: 'width' })}
             precision={2}
+            disabled={order.status === OrderStatus.FULFILLED}
           />
         </Form.Item>
         <Form.Item>X</Form.Item>
@@ -254,13 +254,14 @@ const PackageInfoForm = ({
             min={0}
             placeholder={intl.formatMessage({ id: 'height' })}
             precision={2}
+            disabled={order.status === OrderStatus.FULFILLED}
           />
         </Form.Item>
         <Form.Item
-          name={['dimentions', 'distenceUnit']}
+          name={['dimentions', 'unitOfMeasure']}
           style={{ minWidth: '88px' }}
         >
-          <Select>
+          <Select disabled={order.status === OrderStatus.FULFILLED}>
             {Object.values(DistanceUnit).map((item) => {
               return (
                 <Option key={item} value={item}>
@@ -294,10 +295,14 @@ const PackageInfoForm = ({
             min={0}
             placeholder={intl.formatMessage({ id: 'weight' })}
             precision={2}
+            disabled={order.status === OrderStatus.FULFILLED}
           />
         </Form.Item>
-        <Form.Item name={['weight', 'weightUnit']} style={{ minWidth: '88px' }}>
-          <Select>
+        <Form.Item
+          name={['weight', 'unitOfMeasure']}
+          style={{ minWidth: '88px' }}
+        >
+          <Select disabled={order.status === OrderStatus.FULFILLED}>
             {Object.values(WeightUnit).map((item) => {
               return (
                 <Option key={item} value={item}>
@@ -314,7 +319,7 @@ const PackageInfoForm = ({
             {fields.map(({ key, name, fieldKey, ...restField }, index) => (
               <div key={key}>
                 <Space size="large">
-                  <h3>{`Pakcage -  ${index + 2}`}</h3>{' '}
+                  <h3>{`包裹 -  ${index + 2}`}</h3>{' '}
                   <CloseCircleTwoTone
                     twoToneColor="red"
                     onClick={() => remove(name)}
@@ -325,7 +330,7 @@ const PackageInfoForm = ({
                   initialValue={PackageTypes.PKG}
                   required
                 >
-                  <Select>
+                  <Select disabled={order.status === OrderStatus.FULFILLED}>
                     <Option key="custom" value={PackageTypes.PKG}>
                       {PACKAGE_TYPE_NAMES[PackageTypes.PKG]}
                     </Option>
@@ -357,6 +362,7 @@ const PackageInfoForm = ({
                       min={0}
                       placeholder={intl.formatMessage({ id: 'length' })}
                       precision={2}
+                      disabled={order.status === OrderStatus.FULFILLED}
                     />
                   </Form.Item>
                   <Form.Item>X</Form.Item>
@@ -381,6 +387,7 @@ const PackageInfoForm = ({
                       min={0}
                       placeholder={intl.formatMessage({ id: 'width' })}
                       precision={2}
+                      disabled={order.status === OrderStatus.FULFILLED}
                     />
                   </Form.Item>
                   <Form.Item>X</Form.Item>
@@ -405,15 +412,16 @@ const PackageInfoForm = ({
                       min={0}
                       placeholder={intl.formatMessage({ id: 'height' })}
                       precision={2}
+                      disabled={order.status === OrderStatus.FULFILLED}
                     />
                   </Form.Item>
                   <Form.Item
-                    name={[name, 'dimentions', 'distenceUnit']}
+                    name={[name, 'dimentions', 'unitOfMeasure']}
                     style={{ minWidth: '88px' }}
                     initialValue={packageSetting.distanceUnit}
                     required
                   >
-                    <Select>
+                    <Select disabled={order.status === OrderStatus.FULFILLED}>
                       {Object.values(DistanceUnit).map((item) => {
                         return (
                           <Option key={item} value={item}>
@@ -449,15 +457,16 @@ const PackageInfoForm = ({
                       min={0}
                       placeholder={intl.formatMessage({ id: 'weight' })}
                       precision={2}
+                      disabled={order.status === OrderStatus.FULFILLED}
                     />
                   </Form.Item>
                   <Form.Item
-                    name={[name, 'weight', 'weightUnit']}
+                    name={[name, 'weight', 'unitOfMeasure']}
                     style={{ minWidth: '88px' }}
                     initialValue={packageSetting.weightUnit}
                     required
                   >
-                    <Select>
+                    <Select disabled={order.status === OrderStatus.FULFILLED}>
                       {Object.values(WeightUnit).map((item) => {
                         return (
                           <Option key={item} value={item}>
@@ -470,27 +479,34 @@ const PackageInfoForm = ({
                 </Space>
               </div>
             ))}
-            <Form.Item>
-              <Button
-                type="dashed"
-                onClick={() => add()}
-                block
-                icon={<PlusOutlined />}
-              >
-                <FormattedMessage id="add_package" />
-              </Button>
-            </Form.Item>
+            {order.status !== OrderStatus.FULFILLED &&
+              order.carrier === CARRIERS.UPS &&
+              order.service!.id !== '92' &&
+              order.service!.id !== '93' && (
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    <FormattedMessage id="add_package" />
+                  </Button>
+                </Form.Item>
+              )}
           </>
         )}
       </Form.List>
-      <div style={{ textAlign: 'right' }}>
-        <Button style={{ marginRight: '10px' }} onClick={onCancelHandler}>
-          <FormattedMessage id="cancel" />
-        </Button>
-        <Button type="primary" htmlType="submit" loading={savingPackInfo}>
-          <FormattedMessage id="save" />
-        </Button>
-      </div>
+      {order.status !== OrderStatus.FULFILLED && (
+        <div style={{ textAlign: 'right' }}>
+          <Button style={{ marginRight: '10px' }} onClick={onCancelHandler}>
+            <FormattedMessage id="cancel" />
+          </Button>
+          <Button type="primary" htmlType="submit" loading={savingPackInfo}>
+            <FormattedMessage id="save" />
+          </Button>
+        </div>
+      )}
     </Form>
   );
 };

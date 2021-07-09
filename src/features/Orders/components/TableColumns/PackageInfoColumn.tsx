@@ -79,18 +79,18 @@ const PackageInfoColumn = ({ record }: OrderTabelColumnProps): ReactElement => {
                   </Row>
                   <Row style={{ whiteSpace: 'pre' }}>
                     {`${convert(packageInfo.weight.value)
-                      .from(packageInfo.weight.weightUnit)
+                      .from(packageInfo.weight.unitOfMeasure)
                       .to(packageSetting.weightUnit)
                       .toFixed(2)}${packageSetting.weightUnit}   ${convert(
                       packageInfo.dimentions.length
                     )
-                      .from(packageInfo.dimentions.distenceUnit)
+                      .from(packageInfo.dimentions.unitOfMeasure)
                       .to(packageSetting.distanceUnit)
                       .toFixed(2)} x ${convert(packageInfo.dimentions.width)
-                      .from(packageInfo.dimentions.distenceUnit)
+                      .from(packageInfo.dimentions.unitOfMeasure)
                       .to(packageSetting.distanceUnit)
                       .toFixed(2)} x ${convert(packageInfo.dimentions.height)
-                      .from(packageInfo.dimentions.distenceUnit)
+                      .from(packageInfo.dimentions.unitOfMeasure)
                       .to(packageSetting.distanceUnit)
                       .toFixed(2)} ${packageSetting.distanceUnit}`}
                   </Row>

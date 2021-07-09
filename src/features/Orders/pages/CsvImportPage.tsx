@@ -14,6 +14,10 @@ import {
 } from '../../../redux/orders/ordersSlice';
 import CsvProcessModal from '../components/CsvProcessModal';
 import { selectCurUser } from '../../../redux/user/userSlice';
+import {
+  fetchAddressesHandler,
+  selectAddresses
+} from '../../../redux/settings/addressSlice';
 
 const { Dragger } = Upload;
 
@@ -24,11 +28,13 @@ const CsvImportPage = (): ReactElement => {
   const [showError, setShowError] = useState(false);
   const [loading, setLoading] = useState(false);
   const user = useSelector(selectCurUser);
+  const address = useSelector(selectAddresses);
 
   useEffect(() => {
     setLoading(false);
     setShowError(false);
     dispatch(setCsvData(undefined));
+    dispatch(fetchAddressesHandler());
   }, [dispatch]);
 
   const uploadHandler = (info: any) => {
@@ -50,20 +56,25 @@ const CsvImportPage = (): ReactElement => {
   return (
     <div>
       <CsvProcessModal show={showCsvModal} />
-      <PageHeader title="Import CSV file" />
+      <PageHeader title="批量上传" />
       <Row gutter={40} style={{ padding: '10px 24px' }}>
         <Col span={12}>
-          <h4>Step 1 - Select CSV file to upload</h4>
-          <p style={{ color: '#8fa1aa' }}>
-            Upload all your orders easily by import a csv file with all
-            information
-          </p>
+          <h4>第一步 - 选择需要上传的 CSV 文件</h4>
+          <p style={{ color: '#8fa1aa' }}>使用 csv 文件轻松批量上传订单</p>
           {showError && (
             <Alert
               style={{ padding: '3px 15px', marginBottom: '10px' }}
               type="error"
               showIcon
-              message="Failed to upload. Please try another file or contact us for support."
+              message="上传失败，请检查上传文件或联系我们."
+            />
+          )}
+          {(!address || address.length <= 0) && (
+            <Alert
+              style={{ padding: '3px 15px', marginBottom: '10px' }}
+              type="error"
+              showIcon
+              message="您至少需要有一个默认预存地址来使用批量上传"
             />
           )}
           <Dragger
@@ -71,30 +82,34 @@ const CsvImportPage = (): ReactElement => {
             multiple={false}
             accept=".csv"
             showUploadList={false}
-            action={`${DEFAULT_SERVER_HOST}${SERVER_ROUTES.ORDERS}${SERVER_ROUTES.PRELOAD}`}
+            action={`${DEFAULT_SERVER_HOST}${SERVER_ROUTES.CLIENT_SHIPMENTS}${SERVER_ROUTES.PRELOAD}`}
             headers={{
               Authorization: `${user?.token_type} ${user?.token}`
             }}
             onChange={uploadHandler}
+            disabled={!address || address.length <= 0}
           >
-            <p className="ant-upload-text">Drag a file here</p>
+            <p className="ant-upload-text">拖拽文件上传</p>
             <p className="ant-upload-hint" style={{ fontStyle: 'italic' }}>
-              or
+              或
             </p>
-            <Button type="primary" loading={loading}>
-              <strong>Select file</strong>
+            <Button
+              type="primary"
+              loading={loading}
+              disabled={!address || address.length <= 0}
+            >
+              <strong>选择文件</strong>
             </Button>
           </Dragger>
         </Col>
         <Col span={12}>
-          <h4>Which columns does my csv file need to have?</h4>
+          <h4>CSV 文件需要有哪些数据?</h4>
           <p style={{ color: '#8fa1aa' }}>
-            You can order and name your columns any way you like, you will be
-            able to map them later on in the process.{' '}
+            请您根据我们提供的模板填写订单信息, 您将会在下一步对数据进行核对.{' '}
             <a
               href={`${DEFAULT_SERVER_HOST}${SERVER_ROUTES.STATIC}/${CSV_SAMPLE_FILE}`}
             >
-              Download a sample CSV
+              下载 CSV 模板
             </a>
           </p>
         </Col>

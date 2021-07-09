@@ -1,26 +1,29 @@
-import { ReactElement } from 'react';
 import { OrderAddress } from './address-page';
 import {
   Country,
   Currency,
   DistenceUnit,
-  OrderStatus,
   WeightUnit
 } from '../shared/utils/constants';
+import { IService } from './carrier-page';
 
 export interface CreateOrderData {
   sender: OrderAddress;
-  recipient: OrderAddress;
+  toAddress: OrderAddress;
   customDeclaration?: CustomDeclaration;
 }
 
 export interface Order extends Record<string, unknown> {
   id: string;
-  orderId?: string;
-  orderDate: string;
-  company: string;
+  orderId: string;
+  accountName?: string;
+  carrierAccount?: string;
+  carrier?: string;
+  provider?: string;
+  service?: IService;
+  facility?: string;
   sender: OrderAddress;
-  recipient: OrderAddress;
+  toAddress: OrderAddress;
   return: OrderAddress;
   packageInfo?: PackageInfo;
   morePackages?: PackageInfo[];
@@ -29,18 +32,42 @@ export interface Order extends Record<string, unknown> {
   shipmentOptions: {
     shipmentDate: string;
   };
-  orderStatus: OrderStatus;
-  isHidden: boolean;
   customDeclaration?: CustomDeclaration;
-  items?: Item[];
   customItems?: Item[];
-  labels?: Label[];
-  useItemWeight: boolean;
-  // UI Options
-  selectedRate?: Rate;
-  rates?: Rate[];
+  items?: Item[];
+  status: string;
+  trackingId?: string;
+  trackingStatus?: string;
+  shippingId?: string;
+  rate?: ShipmentRate;
+  labels?: LabelData[];
+  forms?: FormData[];
+  manifested: boolean = false;
   errors?: string[];
-  rateLoading?: boolean;
+  labelLoading: boolean = false;
+  createdAt: string;
+}
+
+export interface ShipmentRate {
+  amount: number;
+  currency: Currency | string;
+}
+
+export interface FormData {
+  data: string;
+  format: string;
+  encodeType: string;
+}
+
+export interface LabelData {
+  carrier: string;
+  service: string;
+  tracking: string;
+  createdOn: Date;
+  data: string;
+  format: string;
+  encodeType: string;
+  isTest: boolean;
 }
 
 export interface CustomDeclaration {
@@ -89,12 +116,12 @@ export interface Dimentions {
   length: number;
   width: number;
   height: number;
-  distenceUnit: DistenceUnit;
+  unitOfMeasure: DistenceUnit;
 }
 
 export interface Weight {
   value: number;
-  weightUnit: WeightUnit;
+  unitOfMeasure: WeightUnit;
 }
 
 export interface Rate {

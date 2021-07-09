@@ -14,7 +14,6 @@ import CarrierPage from '../../Settings/Carriers/pages/CarrierPage';
 import LabelPage from '../../Settings/Labels/pages/LabelPage';
 import PackagePage from '../../Settings/Packages/pages/PackagePage';
 import ManifestPage from '../../Shipments/pages/ManifestPage';
-import ShipmentsPage from '../../Shipments/pages/ShipmentsPage';
 
 const Routes = (): ReactElement => {
   const systemAccounts = useSelector(selectClientAccounts);
@@ -44,7 +43,6 @@ const Routes = (): ReactElement => {
           component={ManifestPage}
         />
       )}
-      <Route path={UI_ROUTES.SHIPMENTS} component={ShipmentsPage} />
       <Route path={UI_ROUTES.ACCOUNT} component={AccountPage} />
       <Route path={UI_ROUTES.CARRIERS} component={CarrierPage} exact />
       <Route path={UI_ROUTES.ADDRESSES} component={AddressPage} exact />

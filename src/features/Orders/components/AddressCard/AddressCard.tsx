@@ -3,7 +3,11 @@ import React, { ReactElement } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { OrderAddress } from '../../../../custom_types/address-page';
-import { COUNTRY_NAMES, LOCALES } from '../../../../shared/utils/constants';
+import {
+  COUNTRY_NAMES,
+  LOCALES,
+  OrderStatus
+} from '../../../../shared/utils/constants';
 import { Order } from '../../../../custom_types/order-page';
 import { selectLanguage } from '../../../../redux/i18n/intlSlice';
 
@@ -34,26 +38,32 @@ const AddressCard = ({
         <strong>
           <FormattedMessage id={title.toLowerCase()} />
         </strong>
-        <Button
-          style={{ float: 'right' }}
-          type="link"
-          onClick={() => showModal(address, title.toLowerCase())}
-        >
-          <strong>
-            <FormattedMessage id="edit" />
-            {language === LOCALES.CHINESE ? '' : ' '}
-            <FormattedMessage id={title.toLowerCase()} />
-          </strong>
-        </Button>
-        {title.toLowerCase() !== 'recipient' && showSelectAddressModal && (
+        {order.status !== OrderStatus.FULFILLED && (
           <Button
-            type="text"
             style={{ float: 'right' }}
-            onClick={() => showSelectAddressModal(address, title.toLowerCase())}
+            type="link"
+            onClick={() => showModal(address, title.toLowerCase())}
           >
-            <FormattedMessage id="address_list" />
+            <strong>
+              <FormattedMessage id="edit" />
+              {language === LOCALES.CHINESE ? '' : ' '}
+              <FormattedMessage id={title.toLowerCase()} />
+            </strong>
           </Button>
         )}
+        {title.toLowerCase() !== 'recipient' &&
+          showSelectAddressModal &&
+          order.status !== OrderStatus.FULFILLED && (
+            <Button
+              type="text"
+              style={{ float: 'right' }}
+              onClick={() =>
+                showSelectAddressModal(address, title.toLowerCase())
+              }
+            >
+              <FormattedMessage id="address_list" />
+            </Button>
+          )}
       </div>
       <div>
         <div>{address.company || address.name}</div>
@@ -77,6 +87,7 @@ const AddressCard = ({
             checked={asReturn}
             style={{ marginTop: '8px' }}
             onChange={onChecked}
+            disabled={order.status === OrderStatus.FULFILLED}
           >
             <FormattedMessage id="use_as_return" />
           </Checkbox>

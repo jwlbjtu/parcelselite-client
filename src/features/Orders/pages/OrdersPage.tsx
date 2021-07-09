@@ -1,3 +1,4 @@
+import { FileTextOutlined } from '@ant-design/icons';
 import { Button, Divider, PageHeader, Table, Tabs } from 'antd';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -14,11 +15,19 @@ import {
   setPurchasingOrderId,
   setShowOrderAddressModal
 } from '../../../redux/orders/ordersSlice';
+import { selectClientAccounts } from '../../../redux/settings/carriersSlice';
+import {
+  selectShowTrackingModal,
+  selectTrackingInfo
+} from '../../../redux/shipments/shipmentSlice';
 import NoData from '../../../shared/components/NoData';
-import { OrderStatus, UI_ROUTES } from '../../../shared/utils/constants';
+import {
+  CARRIERS,
+  OrderStatus,
+  UI_ROUTES
+} from '../../../shared/utils/constants';
+import TrackingModal from '../../Shipments/components/TrackingModal';
 import OrderAddressModal from '../components/AddressCard/OrderAddressModal';
-import BuyModal from '../components/BuyModal';
-import PurchasedModal from '../components/PurchasedModal';
 import columns from '../components/TableColumns/columns';
 
 const { TabPane } = Tabs;
@@ -26,7 +35,10 @@ const { TabPane } = Tabs;
 const OrdersPage = (): ReactElement => {
   const orders = useSelector(selectOrders);
   const purchasingOrderId = useSelector(selectPurchasingOrderId);
+  const accounts = useSelector(selectClientAccounts);
   const loading = useSelector(selectLoading);
+  const showTrackingModal = useSelector(selectShowTrackingModal);
+  const trackingInfo = useSelector(selectTrackingInfo);
   const dispatch = useDispatch();
   const history = useHistory();
   const orderFilter = useSelector(selectOrderFilter);
@@ -72,16 +84,15 @@ const OrdersPage = (): ReactElement => {
 
   return (
     <div>
-      {curOrder && <BuyModal order={curOrder} />}
-      {curOrder && <PurchasedModal order={curOrder} />}
       {curOrder && (
         <OrderAddressModal
           orderId={curOrder.id}
-          address={curOrder.recipient}
+          address={curOrder.toAddress}
           type="recipient"
           onCancel={addressModalCancelHandler}
         />
       )}
+      <TrackingModal trackingInfo={trackingInfo} show={showTrackingModal} />
       <PageHeader
         title={<FormattedMessage id="orders" />}
         extra={[
@@ -104,14 +115,28 @@ const OrdersPage = (): ReactElement => {
             }
           >
             <FormattedMessage id="createLabel" />
+          </Button>,
+          <Button
+            key="manifest"
+            icon={<FileTextOutlined />}
+            type="primary"
+            ghost
+            disabled={
+              accounts.findIndex((ele) => ele.carrier === CARRIERS.DHL_ECOM) < 0
+            }
+            onClick={() =>
+              history.push(`${UI_ROUTES.SHIPMENTS}${UI_ROUTES.MANIFESTS}`)
+            }
+          >
+            <FormattedMessage id="create_manifest" />
           </Button>
         ]}
       />
       <Divider style={{ marginBottom: '0px' }} />
       <Tabs defaultActiveKey="all" onChange={orderStatusTabChangeHandler}>
-        <TabPane tab="All" key="all" />
-        <TabPane tab="Unfulfilled" key="unfulfilled" />
-        <TabPane tab="Fulfilled" key="fulfilled" />
+        <TabPane tab="全部" key="all" />
+        <TabPane tab="未完成" key="unfulfilled" />
+        <TabPane tab="已完成" key="fulfilled" />
       </Tabs>
       <Table<Order>
         scroll={{ x: 'max-content' }}

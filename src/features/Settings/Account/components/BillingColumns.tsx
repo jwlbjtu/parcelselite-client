@@ -6,6 +6,7 @@ import { getCarrierIcon } from '../../../../shared/utils/logo.helper';
 import './BillingColumns.css';
 import { getDisplayTracking } from '../../../../shared/utils/rates.helper';
 import { Transaction } from '../../../../custom_types/billing-page';
+import { isOrderInternational } from '../../../../shared/utils/helpers';
 
 const renderCell = (
   text: number,
@@ -53,11 +54,11 @@ const columns = [
     key: 'description',
     dataIndex: 'description',
     render: (description: string): ReactElement | string => {
-      const data = description.split(',');
+      const data = description.split(', ');
       if (data.length === 1) {
         return description;
       }
-      const [carrier, serviceId, tracking] = data;
+      const [carrier, serviceName, tracking] = data;
       return (
         <Space size="small" className="transation_table_cell">
           {tracking ? (
@@ -67,7 +68,7 @@ const columns = [
                 style={{ width: '24px', height: '24px' }}
                 src={getCarrierIcon(carrier)}
               />{' '}
-              <span>{getDisplayTracking(carrier, tracking, serviceId)}</span>
+              <span>{getDisplayTracking(carrier, tracking, serviceName)}</span>
             </>
           ) : (
             '-'
@@ -81,12 +82,6 @@ const columns = [
     key: 'total',
     dataIndex: 'total',
     render: renderCell
-  },
-  {
-    title: '余额',
-    key: 'balance',
-    dataIndex: 'balance',
-    render: (value: number): string => value.toFixed(2)
   }
 ];
 

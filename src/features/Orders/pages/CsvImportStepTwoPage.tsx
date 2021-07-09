@@ -1,4 +1,16 @@
-import { Alert, Button, Col, Form, PageHeader, Row, Select, Table } from 'antd';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Col,
+  Form,
+  PageHeader,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Table
+} from 'antd';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useHistory } from 'react-router-dom';
@@ -35,8 +47,10 @@ const CsvImportStepTwoPage = (): ReactElement => {
   >();
   const [csvMap, setCsvMap] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
+    setAgreed(false);
     setError(undefined);
     setCsvTableData(undefined);
     setCsvMap({});
@@ -145,7 +159,7 @@ const CsvImportStepTwoPage = (): ReactElement => {
       }
       axios
         .post(
-          `${SERVER_ROUTES.ORDERS}${SERVER_ROUTES.CSV}`,
+          `${SERVER_ROUTES.CLIENT_SHIPMENTS}${SERVER_ROUTES.CSV}`,
           {
             map: finalMap,
             name: csvData.name
@@ -175,7 +189,7 @@ const CsvImportStepTwoPage = (): ReactElement => {
 
   const columns = [
     {
-      title: 'Your CSV column title',
+      title: '上传文件表头',
       key: 'csv_column_title',
       dataIndex: 'header',
       render: (header: string): ReactElement => {
@@ -183,7 +197,7 @@ const CsvImportStepTwoPage = (): ReactElement => {
       }
     },
     {
-      title: 'What information is this?',
+      title: '匹配数据',
       key: 'parcelselite_option',
       dataIndex: 'option',
       render: (index: number): ReactElement => {
@@ -191,7 +205,7 @@ const CsvImportStepTwoPage = (): ReactElement => {
       }
     },
     {
-      title: 'First data set of your CSV',
+      title: '上传文件第一列数据',
       key: 'csv_first_data',
       dataIndex: 'data',
       render: (data: string): ReactElement => {
@@ -202,7 +216,7 @@ const CsvImportStepTwoPage = (): ReactElement => {
 
   return (
     <div>
-      <PageHeader title="Import CSV file" />
+      <PageHeader title="批量上传" />
       <div style={{ padding: '10px 24px' }}>
         {error && (
           <Alert
@@ -218,45 +232,64 @@ const CsvImportStepTwoPage = (): ReactElement => {
             }
           />
         )}
-        <h4>
-          Step 2 - Match your column title with our standard column titles
-        </h4>
+        <h4>第二步 - 请核对和匹配您上传的数据</h4>
         <p style={{ color: '#8fa1aa' }}>
-          If you uploaded the wrong csv file, you can{' '}
+          如果上传文件有误,{' '}
           <Link to={`${UI_ROUTES.ORDERS}${UI_ROUTES.CSV_IMPORT}`}>
-            go back and upload another one here.
+            请返回并再次上传.
           </Link>
         </p>
-        <Row>
-          <Col span={18}>
-            <Form.Item style={{ width: '300px' }} label="CSV Template">
-              <Select defaultValue="default">
-                <Option key="default" value="default">
-                  Default
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Button
-              style={{ float: 'right' }}
-              type="primary"
-              loading={loading}
-              onClick={uploadHandler}
-            >
-              Upload
-            </Button>
-          </Col>
-        </Row>
-        <Table<CsvTableRecord>
-          rowKey={(record) => record.option}
-          columns={columns}
-          dataSource={csvTabelData}
-          locale={{
-            emptyText: <NoData />
-          }}
-          pagination={false}
-        />
+        <Spin spinning={loading}>
+          <Row>
+            <Col span={12}>
+              <Form.Item style={{ width: '300px' }} label="CSV 模板">
+                <Select defaultValue="default">
+                  <Option key="default" value="default">
+                    默认
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Space size="large">
+                <Alert
+                  style={{
+                    padding: '3px 15px',
+                    marginBottom: '10px',
+                    width: '380px'
+                  }}
+                  type="warning"
+                  showIcon
+                  message="请仔细核对上传数据, 批量上传将直接生成面单并产生邮寄费用. 面单生成后，邮寄费用将不予退还。"
+                />
+                <Checkbox
+                  onChange={() => setAgreed(!agreed)}
+                  style={{ width: '150px' }}
+                >
+                  我已阅读并同意
+                </Checkbox>
+                <Button
+                  style={{ float: 'right' }}
+                  type="primary"
+                  loading={loading}
+                  onClick={uploadHandler}
+                  disabled={!agreed}
+                >
+                  上传数据
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+          <Table<CsvTableRecord>
+            rowKey={(record) => record.option}
+            columns={columns}
+            dataSource={csvTabelData}
+            locale={{
+              emptyText: <NoData />
+            }}
+            pagination={false}
+          />
+        </Spin>
       </div>
     </div>
   );

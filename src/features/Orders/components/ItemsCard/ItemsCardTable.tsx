@@ -42,7 +42,7 @@ const ItemsCardTable = ({
           emptyText: <NoData />
         }}
       />
-      {order.orderStatus !== OrderStatus.FULFILLED && (
+      {order.status !== OrderStatus.FULFILLED && (
         <>
           <div style={{ textAlign: 'center', marginTop: '10px' }}>
             <Button

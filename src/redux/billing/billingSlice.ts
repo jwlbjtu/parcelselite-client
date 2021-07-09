@@ -47,7 +47,6 @@ export const fetchTransactions = (): AppThunk => (
       })
       .then((response) => {
         const transactions = response.data;
-        console.log(transactions);
         dispatch(setTransactions(transactions));
       })
       .catch((error) => {

@@ -13,6 +13,7 @@ import { useForm } from 'antd/lib/form/Form';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
+import convert from 'convert-units';
 import { Item, ItemUpdateData } from '../../../../custom_types/order-page';
 import {
   deleteOrderItemHandler,
@@ -63,9 +64,21 @@ const ItemsModal = ({
   const packageSetting = useSelector(selectPackagesUnits);
   const deleting = useSelector(selectDeletingItem);
   const [quantity, setQuantity] = useState(item ? item.quantity : 0);
-  const [itemWeight, setItemWeight] = useState(item ? item.itemWeight : 0);
+  const [itemWeight, setItemWeight] = useState(
+    item
+      ? convert(item.itemWeight)
+          .from(item.itemWeightUnit)
+          .to(packageSetting.weightUnit)
+      : 0
+  );
   const [itemValue, setItemValue] = useState(item ? item.itemValue : 0);
-  const [totalWeight, setTotalWeight] = useState(item ? item.totalWeight : 0);
+  const [totalWeight, setTotalWeight] = useState(
+    item
+      ? convert(item.totalWeight)
+          .from(item.itemWeightUnit)
+          .to(packageSetting.weightUnit)
+      : 0
+  );
   const [totalValue, setTotalValue] = useState(item ? item.totalValue : 0);
   const [weightUnit, setWeightUnit] = useState(
     packageSetting.weightUnit || WeightUnit.LB
@@ -76,9 +89,21 @@ const ItemsModal = ({
 
   useEffect(() => {
     setQuantity(item ? item.quantity : 0);
-    setItemWeight(item ? item.itemWeight : 0);
+    setItemWeight(
+      item
+        ? convert(item.itemWeight)
+            .from(item.itemWeightUnit)
+            .to(packageSetting.weightUnit)
+        : 0
+    );
     setItemValue(item ? item.itemValue : 0);
-    setTotalWeight(item ? item.totalWeight : 0);
+    setTotalWeight(
+      item
+        ? convert(item.totalWeight)
+            .from(item.itemWeightUnit)
+            .to(packageSetting.weightUnit)
+        : 0
+    );
     setTotalValue(item ? item.totalValue : 0);
     setWeightUnit(packageSetting.weightUnit || WeightUnit.LB);
     setValueUnit(item ? item.itemValueCurrency : Currency.USD);
@@ -86,7 +111,11 @@ const ItemsModal = ({
     form.setFieldsValue({
       itemTitle: item?.itemTitle,
       quantity: item ? item.quantity : 0,
-      itemWeight: item ? item.itemWeight : 0,
+      itemWeight: item
+        ? convert(item.itemWeight)
+            .from(item.itemWeightUnit)
+            .to(packageSetting.weightUnit)
+        : 0,
       itemValue: item ? item.itemValue : 0,
       itemWeightUnit: packageSetting.weightUnit || WeightUnit.LB,
       itemValueCurrency: item ? item.itemValueCurrency : Currency.USD,

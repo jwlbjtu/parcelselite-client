@@ -8,7 +8,11 @@ import {
   setPurchasingOrderId,
   setShowOrderAddressModal
 } from '../../../../redux/orders/ordersSlice';
-import { COUNTRY_NAMES, UI_ROUTES } from '../../../../shared/utils/constants';
+import {
+  COUNTRY_NAMES,
+  OrderStatus,
+  UI_ROUTES
+} from '../../../../shared/utils/constants';
 import { getCountryIcon } from '../../../../shared/utils/logo.helper';
 
 import './columns.css';
@@ -16,36 +20,36 @@ import './columns.css';
 const CusomterColumnPopup = ({
   record
 }: OrderTabelColumnProps): ReactElement => {
-  const { recipient, id } = record;
+  const { toAddress, id } = record;
   const dispatch = useDispatch();
   return (
     <div style={{ width: '200px' }}>
       <div>
-        <strong>{recipient.company || recipient.name}</strong>
+        <strong>{toAddress.company || toAddress.name}</strong>
       </div>
       <div>
-        <small>{recipient.street1}</small>
+        <small>{toAddress.street1}</small>
       </div>
       <div>
-        <small>{recipient.street2}</small>
+        <small>{toAddress.street2}</small>
       </div>
       <div>
-        <small>{`${recipient.city}, ${recipient.state} ${recipient.zip}`}</small>
+        <small>{`${toAddress.city}, ${toAddress.state} ${toAddress.zip}`}</small>
       </div>
       <div>
-        <small>{COUNTRY_NAMES[recipient.country]}</small>
+        <small>{COUNTRY_NAMES[toAddress.country]}</small>
       </div>
       <div>
         <small>
-          <a className="dark-link" href={`mailto:${recipient.email}`}>
-            {recipient.email}
+          <a className="dark-link" href={`mailto:${toAddress.email}`}>
+            {toAddress.email}
           </a>
         </small>
       </div>
       <div>
         <small>
-          <a className="dark-link" href={`tel:${recipient.phone}`}>
-            {recipient.phone}
+          <a className="dark-link" href={`tel:${toAddress.phone}`}>
+            {toAddress.phone}
           </a>
         </small>
       </div>
@@ -62,11 +66,13 @@ const CusomterColumnPopup = ({
               dispatch(setShowOrderAddressModal(true));
             }}
           >
-            <strong>
-              <small>
-                <FormattedMessage id="editRecipient" />
-              </small>
-            </strong>
+            {record.status !== OrderStatus.FULFILLED && (
+              <strong>
+                <small>
+                  <FormattedMessage id="editRecipient" />
+                </small>
+              </strong>
+            )}
           </Button>
         </Col>
       </Row>
@@ -76,7 +82,7 @@ const CusomterColumnPopup = ({
 
 const CustomerColumn = ({ record }: OrderTabelColumnProps): ReactElement => {
   const history = useHistory();
-  const { id, recipient } = record;
+  const { id, toAddress } = record;
 
   return (
     <Popover content={<CusomterColumnPopup record={record} />}>
@@ -87,20 +93,20 @@ const CustomerColumn = ({ record }: OrderTabelColumnProps): ReactElement => {
         }
       >
         <Col className="icon-col" span={4}>
-          {recipient.country && (
+          {toAddress.country && (
             <Image
               style={{ width: '18px', height: '18px' }}
-              src={getCountryIcon(recipient.country)}
+              src={getCountryIcon(toAddress.country)}
               preview={false}
             />
           )}
         </Col>
         <Col span={20}>
           <Row>
-            <strong>{recipient.name}</strong>
+            <strong>{toAddress.name}</strong>
           </Row>
           <Row>
-            <span>{`${recipient.city}, ${recipient.state} ${recipient.zip}`}</span>
+            <span>{`${toAddress.city}, ${toAddress.state} ${toAddress.zip}`}</span>
           </Row>
         </Col>
       </Row>

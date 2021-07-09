@@ -1,19 +1,18 @@
 import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
-import { Label } from '../../custom_types/order-page';
+import { Label, Order } from '../../custom_types/order-page';
 import {
   AppThunk,
   Manifest,
   RootState,
   ShipmentState
 } from '../../custom_types/redux-types';
-import { Shipment, TrackingInfo } from '../../custom_types/shipment-page';
+import { TrackingInfo } from '../../custom_types/shipment-page';
 import errorHandler from '../../shared/components/errorHandler';
 import axios from '../../shared/utils/axios.base';
 import { SERVER_ROUTES } from '../../shared/utils/constants';
 
 const initialState: ShipmentState = {
   shipments: [],
-  labels: [],
   manifests: [],
   loading: false,
   manifestLoading: false,
@@ -25,10 +24,10 @@ const shipmentSlice = createSlice({
   name: 'shipments',
   initialState,
   reducers: {
-    setShipments: (state, action: PayloadAction<Shipment[]>) => {
+    setShipments: (state, action: PayloadAction<Order[]>) => {
       state.shipments = action.payload;
     },
-    updateShipment: (state, action: PayloadAction<Shipment>) => {
+    updateShipment: (state, action: PayloadAction<Order>) => {
       const oldShipment = state.shipments.find(
         (item) => item.id === action.payload.id
       );
@@ -40,9 +39,6 @@ const shipmentSlice = createSlice({
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
-    },
-    setLabels: (state, action: PayloadAction<Label[]>) => {
-      state.labels = action.payload;
     },
     setManifests: (state, action: PayloadAction<Manifest[]>) => {
       state.manifests = action.payload;
@@ -76,7 +72,6 @@ export const {
   setShipments,
   updateShipment,
   setLoading,
-  setLabels,
   setManifests,
   updateManifest,
   setManifestLoading,
@@ -84,32 +79,8 @@ export const {
   setTrackingInfo
 } = shipmentSlice.actions;
 
-export const fetchShipmentsHandler = (): AppThunk => (
-  dispatch: Dispatch,
-  getState: () => RootState
-) => {
-  const user = getState().currentUser.currentUser;
-  if (user) {
-    dispatch(setLoading(true));
-    axios
-      .get(SERVER_ROUTES.SHIPMENTS, {
-        headers: {
-          Authorization: `${user.token_type} ${user.token}`
-        }
-      })
-      .then((response) => {
-        const shipments = response.data;
-        dispatch(setShipments(shipments));
-      })
-      .catch((error) => {
-        errorHandler(error, dispatch);
-      })
-      .finally(() => dispatch(setLoading(false)));
-  }
-};
-
-export const fetchLabelsHandler = (
-  carrierRef: string,
+export const fetchManifestShipmentHandler = (
+  carrierAccount: string,
   date: string
 ): AppThunk => (dispatch: Dispatch, getState: () => RootState) => {
   const user = getState().currentUser.currentUser;
@@ -117,7 +88,7 @@ export const fetchLabelsHandler = (
     dispatch(setLoading(true));
     axios
       .get(
-        `${SERVER_ROUTES.SHIPMENTS}/labels?date=${date}&carrierRef=${carrierRef}`,
+        `${SERVER_ROUTES.MANIFEST}/shipments?date=${date}&carrierAccount=${carrierAccount}`,
         {
           headers: {
             Authorization: `${user.token_type} ${user.token}`
@@ -125,11 +96,11 @@ export const fetchLabelsHandler = (
         }
       )
       .then((response) => {
-        const labels = response.data;
-        dispatch(setLabels(labels));
+        const shipments = response.data;
+        dispatch(setShipments(shipments));
       })
       .catch((error) => {
-        dispatch(setLabels([]));
+        dispatch(setShipments([]));
         errorHandler(error, dispatch);
       })
       .finally(() => dispatch(setLoading(false)));
@@ -144,14 +115,11 @@ export const fetchManifestsHandler = (
   if (user) {
     dispatch(setManifestLoading(true));
     axios
-      .get(
-        `${SERVER_ROUTES.SHIPMENTS}/manifests?date=${date}&carrierRef=${carrierRef}`,
-        {
-          headers: {
-            Authorization: `${user.token_type} ${user.token}`
-          }
+      .get(`${SERVER_ROUTES.MANIFEST}?date=${date}&carrierRef=${carrierRef}`, {
+        headers: {
+          Authorization: `${user.token_type} ${user.token}`
         }
-      )
+      })
       .then((response) => {
         const manifests = response.data;
         dispatch(setManifests(manifests));
@@ -165,19 +133,19 @@ export const fetchManifestsHandler = (
 };
 
 export const createManifestsHandler = (
-  carrier: string | undefined,
   carrierRef: string | undefined,
+  carrierAccount: string | undefined,
   shippingDate: string,
-  labels: Label[]
+  shipments: Order[]
 ): AppThunk => (dispatch: Dispatch, getState: () => RootState) => {
   const user = getState().currentUser.currentUser;
-  if (user && carrierRef && carrier) {
+  if (user && carrierAccount && carrierRef) {
     dispatch(setLoading(true));
-    const labelIds = labels.map((ele) => ele.id);
+    const shipmentIds = shipments.map((ele) => ele.id);
     axios
       .post(
-        `${SERVER_ROUTES.SHIPMENTS}/manifests`,
-        { carrier, carrierRef, labelIds },
+        `${SERVER_ROUTES.MANIFEST}`,
+        { carrierAccount, shipmentIds },
         {
           headers: {
             Authorization: `${user.token_type} ${user.token}`
@@ -186,7 +154,7 @@ export const createManifestsHandler = (
       )
       .then(() => {
         dispatch(setLoading(false));
-        dispatch(fetchLabelsHandler(carrierRef, shippingDate));
+        dispatch(fetchManifestShipmentHandler(carrierAccount, shippingDate));
         dispatch(fetchManifestsHandler(carrierRef, shippingDate));
       })
       .catch((error) => {
@@ -205,7 +173,7 @@ export const refreshManifestHandler = (manifestId: string): AppThunk => (
     dispatch(setManifestLoading(true));
     axios
       .get(
-        `${SERVER_ROUTES.SHIPMENTS}/refresh_manifest?manifestId=${manifestId}`,
+        `${SERVER_ROUTES.MANIFEST}/refresh_manifest?manifestId=${manifestId}`,
         {
           headers: {
             Authorization: `${user.token_type} ${user.token}`
@@ -232,7 +200,7 @@ export const fetchTrackingHandler = (shipmentId: string): AppThunk => (
   if (user) {
     dispatch(setLoading(true));
     axios
-      .get(`${SERVER_ROUTES.SHIPMENTS}/tracking?shipmentId=${shipmentId}`, {
+      .get(`${SERVER_ROUTES.MANIFEST}/tracking?shipmentId=${shipmentId}`, {
         headers: {
           Authorization: `${user.token_type} ${user.token}`
         }
@@ -251,12 +219,10 @@ export const fetchTrackingHandler = (shipmentId: string): AppThunk => (
   }
 };
 
-export const selectShipments = (state: RootState): Shipment[] =>
+export const selectShipments = (state: RootState): Order[] =>
   state.shipments.shipments;
 export const selectShipmentLoading = (state: RootState): boolean =>
   state.shipments.loading;
-export const selectLabels = (state: RootState): Label[] =>
-  state.shipments.labels;
 export const selectManifests = (state: RootState): Manifest[] =>
   state.shipments.manifests;
 export const selectManifestLoading = (state: RootState): boolean =>

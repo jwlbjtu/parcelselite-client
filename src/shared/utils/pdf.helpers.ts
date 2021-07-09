@@ -1,7 +1,7 @@
 import JSPDF from 'jspdf';
 import { PDFDocument, degrees } from 'pdf-lib';
 import dayjs from 'dayjs';
-import { Label, Order } from '../../custom_types/order-page';
+import { FormData, LabelData, Order } from '../../custom_types/order-page';
 import {
   FILE_FORMAT_SIZES,
   COUNTRY_NAMES,
@@ -34,7 +34,7 @@ export const downloadPdfHandler = async (
 };
 
 export const downloadLabelsHandler = async (
-  labelsData: Label[] | undefined,
+  labelsData: LabelData[] | undefined,
   format: string
 ): Promise<void> => {
   if (labelsData && labelsData.length > 0) {
@@ -47,52 +47,29 @@ export const downloadLabelsHandler = async (
 
       const isUSPSIntl =
         label.carrier === CARRIERS.USPS &&
-        USPS_INTL_SERVICE_IDS_LIST.indexOf(label.serviceId) >= 0;
+        USPS_INTL_SERVICE_IDS_LIST.indexOf(label.service) >= 0;
 
-      const page =
-        label.carrier === CARRIERS.UPS || isUSPSIntl
-          ? rootDoc.addPage([fileSize[1], fileSize[0]])
-          : rootDoc.addPage([fileSize[0], fileSize[1]]);
+      const verticalLabel = label.carrier === CARRIERS.UPS || isUSPSIntl;
+
+      const page = verticalLabel
+        ? rootDoc.addPage([fileSize[1], fileSize[0]])
+        : rootDoc.addPage([fileSize[0], fileSize[1]]);
 
       if (labelFormat === 'PDF') {
         // eslint-disable-next-line no-await-in-loop
-        const pdfDoc = await PDFDocument.load(label.label);
+        const pdfDoc = await PDFDocument.load(label.data);
         // eslint-disable-next-line no-await-in-loop
         const pdfPage = await rootDoc.embedPage(pdfDoc.getPage(0));
         page.drawPage(pdfPage, {
           x: 0,
           y: 0,
-          width: isUSPSIntl ? fileSize[1] : fileSize[0],
-          height: isUSPSIntl ? fileSize[0] : fileSize[1]
+          width: verticalLabel ? fileSize[1] : fileSize[0],
+          height: verticalLabel ? fileSize[0] : fileSize[1]
         });
-
-        if (label.moreLabels) {
-          for (let j = 0; j < label.moreLabels.length; j += 1) {
-            const labelItem = label.moreLabels[j];
-            if (labelItem.length > 0) {
-              const newPage =
-                label.carrier === CARRIERS.UPS || isUSPSIntl
-                  ? rootDoc.addPage([fileSize[1], fileSize[0]])
-                  : rootDoc.addPage([fileSize[0], fileSize[1]]);
-              // eslint-disable-next-line no-await-in-loop
-              const morePdfDoc = await PDFDocument.load(labelItem);
-              // eslint-disable-next-line no-await-in-loop
-              const morePdfPage = await rootDoc.embedPage(
-                morePdfDoc.getPage(0)
-              );
-              newPage.drawPage(morePdfPage, {
-                x: 0,
-                y: 0,
-                width: fileSize[1],
-                height: fileSize[0]
-              });
-            }
-          }
-        }
       } else {
         // eslint-disable-next-line no-await-in-loop
-        const image = await rootDoc.embedPng(label.label);
-        if (label.carrier === CARRIERS.UPS) {
+        const image = await rootDoc.embedPng(label.data);
+        if (verticalLabel) {
           page.drawImage(image, {
             x: 30,
             y: 0,
@@ -107,58 +84,58 @@ export const downloadLabelsHandler = async (
             height: fileSize[1]
           });
         }
-
-        if (label.moreLabels) {
-          for (let j = 0; j < label.moreLabels.length; j += 1) {
-            const labelItem = label.moreLabels[j];
-            if (labelItem.length > 0) {
-              if (label.carrier === CARRIERS.UPS) {
-                try {
-                  // UPS Form PDF Format 3 Pages
-                  // eslint-disable-next-line no-await-in-loop
-                  const upsFormSize =
-                    FILE_FORMAT_SIZES_PDF_LIB[FILE_FORMATS.standard];
-                  // eslint-disable-next-line no-await-in-loop
-                  const morePdfDoc = await PDFDocument.load(labelItem);
-                  const pageCount = morePdfDoc.getPageCount();
-                  for (let k = 0; k < pageCount; k += 1) {
-                    const addedPage = rootDoc.addPage([
-                      upsFormSize[0],
-                      upsFormSize[1]
-                    ]);
-                    // eslint-disable-next-line no-await-in-loop
-                    const embededPage = await rootDoc.embedPage(
-                      morePdfDoc.getPage(k)
-                    );
-                    addedPage.drawPage(embededPage, {
-                      x: 0,
-                      y: 0,
-                      width: upsFormSize[0],
-                      height: upsFormSize[1]
-                    });
-                  }
-                } catch (error) {
-                  const newPage = rootDoc.addPage([fileSize[1], fileSize[0]]);
-                  // eslint-disable-next-line no-await-in-loop
-                  const labelImage = await rootDoc.embedPng(labelItem);
-                  newPage.drawImage(labelImage, {
-                    x: 30,
-                    y: 0,
-                    width: fileSize[1],
-                    height: fileSize[0]
-                  });
-                }
-              }
-            }
-          }
-        }
       }
-      if (label.isTest && label.carrier !== CARRIERS.UPS) {
+      if (label.isTest && label.carrier === CARRIERS.DHL_ECOM) {
         page.drawText('Sample', {
           x: formatSize.sample.x,
           y: formatSize.sample.y,
           size: formatSize.sample.font_size,
           rotate: degrees(formatSize.sample.angle)
+        });
+      }
+    }
+    const pdfBytes = await rootDoc.save();
+    window.open(
+      URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }))
+    );
+  }
+};
+
+export const downloadFormsHandler = async (
+  forms: FormData[] | undefined,
+  format: string
+): Promise<void> => {
+  if (forms && forms.length > 0) {
+    const fileSize = FILE_FORMAT_SIZES_PDF_LIB[format];
+    const rootDoc = await PDFDocument.create();
+    for (let i = 0; i < forms.length; i += 1) {
+      const f = forms[i];
+      const formFormat = f.format;
+
+      if (formFormat === 'PDF') {
+        // eslint-disable-next-line no-await-in-loop
+        const pdfDoc = await PDFDocument.load(f.data);
+        const pageNum = pdfDoc.getPageCount();
+        for (let k = 0; k < pageNum; k += 1) {
+          const page = rootDoc.addPage([fileSize[0], fileSize[1]]);
+          // eslint-disable-next-line no-await-in-loop
+          const pdfPage = await rootDoc.embedPage(pdfDoc.getPage(k));
+          page.drawPage(pdfPage, {
+            x: 0,
+            y: 0,
+            width: fileSize[0],
+            height: fileSize[1]
+          });
+        }
+      } else {
+        const page = rootDoc.addPage([fileSize[0], fileSize[1]]);
+        // eslint-disable-next-line no-await-in-loop
+        const image = await rootDoc.embedPng(f.data);
+        page.drawImage(image, {
+          x: 0,
+          y: 0,
+          width: fileSize[0],
+          height: fileSize[1]
         });
       }
     }
@@ -186,7 +163,7 @@ export const downloadPackSlipHandler = (order: Order, format: string): void => {
   );
   doc.setFontSize(formatSize.fontSize);
   doc.text(
-    `Packing Slip for Order ${order.orderId ? order.orderId : '#1000'}`,
+    `Packing Slip`,
     formatSize.header.content.x,
     formatSize.header.content.y,
     { align: 'center', baseline: 'middle' }
@@ -272,7 +249,7 @@ export const downloadPackSlipHandler = (order: Order, format: string): void => {
     level += 1;
   }
   doc.text(
-    dayjs(order.orderDate).format('MM/DD/YYYY'),
+    dayjs(order.createdAt).format('MM/DD/YYYY'),
     formatSize.orderInfo.x + formatSize.orderInfo.distance,
     formatSize.orderInfo.y + level * formatSize.orderInfo.step
   );
@@ -301,32 +278,32 @@ export const downloadPackSlipHandler = (order: Order, format: string): void => {
   );
   doc.setFont('helvetica', 'normal');
   doc.text(
-    `${order.recipient.company || order.recipient.name}`,
+    `${order.toAddress.company || order.toAddress.name}`,
     formatSize.receipent.x,
     formatSize.receipent.y
   );
   doc.text(
-    order.recipient.street1,
+    order.toAddress.street1,
     formatSize.receipent.x,
     formatSize.receipent.y + level * formatSize.receipent.step
   );
   level += 1;
-  if (order.recipient.street2) {
+  if (order.toAddress.street2) {
     doc.text(
-      order.recipient.street2,
+      order.toAddress.street2,
       formatSize.receipent.x,
       formatSize.receipent.y + level * formatSize.receipent.step
     );
     level += 1;
   }
   doc.text(
-    `${order.recipient.city}, ${order.recipient.state} ${order.recipient.zip}`,
+    `${order.toAddress.city}, ${order.toAddress.state} ${order.toAddress.zip}`,
     formatSize.receipent.x,
     formatSize.receipent.y + level * formatSize.receipent.step
   );
   level += 1;
   doc.text(
-    COUNTRY_NAMES[order.recipient.country],
+    COUNTRY_NAMES[order.toAddress.country],
     formatSize.receipent.x,
     formatSize.receipent.y + level * formatSize.receipent.step
   );

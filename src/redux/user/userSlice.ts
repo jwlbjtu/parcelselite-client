@@ -20,10 +20,8 @@ import {
 import convertUserResponse from '../../features/Users/user.helps';
 import { setAddresses } from '../settings/addressSlice';
 import {
+  setOrderFilter,
   setOrdersData,
-  setPurchasing,
-  setShowBuyModal,
-  setShowPurchasedModal,
   updateOrder
 } from '../orders/ordersSlice';
 import { Order } from '../../custom_types/order-page';
@@ -185,6 +183,7 @@ export const logoutUserHandler = (): AppThunk => (
   dispatch(setClientAccounts([]));
   dispatch(setAddresses([]));
   dispatch(setOrdersData([]));
+  dispatch(setOrderFilter({ filter: undefined }));
   const timer = getState().currentUser.userTimeout;
   if (timer) clearTimeout(timer);
 };
@@ -242,30 +241,27 @@ export const refreshUserHandler = (): AppThunk => (
   }
 };
 
-export const purchaseOrderHandler = (order: Order): AppThunk => (
-  dispatch: Dispatch,
-  getState: () => RootState
-) => {
+export const purchaseOrderHandler = (
+  order: Order,
+  isTest: boolean
+): AppThunk => (dispatch: Dispatch, getState: () => RootState) => {
   const user = getState().currentUser.currentUser;
-  if (user && order.selectedRate) {
+  if (user && order.packageInfo) {
     // Check Errors
-    const result = checkOrderLabelErrors(order, order.selectedRate);
+    const result = checkOrderLabelErrors(order);
     if (result.length > 0) {
-      dispatch(setShowBuyModal(false));
       const newOrder: Order = {
         ...order,
-        rates: order.rates,
         errors: result,
-        selectedRate: order.selectedRate,
-        rateLoading: false
+        labelLoading: false
       };
       dispatch(updateOrder(newOrder));
     } else {
-      dispatch(setPurchasing(true));
+      dispatch(updateOrder({ ...order, labelLoading: true }));
       axios
         .post(
-          `${SERVER_ROUTES.ORDERS}/label`,
-          { id: order.id, rate: order.selectedRate },
+          `${SERVER_ROUTES.CLIENT_SHIPMENTS}/label`,
+          { id: order.id, isTest },
           {
             headers: {
               Authorization: `${user.token_type} ${user.token}`
@@ -276,28 +272,20 @@ export const purchaseOrderHandler = (order: Order): AppThunk => (
           const resData = response.data;
           const newOrder: Order = {
             ...resData.order,
-            selectedRate: undefined,
-            rates: [],
-            errors: resData.errors || []
+            errors: resData.errors || [],
+            labelLoading: false
           };
           dispatch(updateCurrentUserBalance(resData.balance));
           dispatch(updateOrder(newOrder));
-          dispatch(setShowPurchasedModal(true));
         })
         .catch((error) => {
           const newOrder: Order = {
             ...order,
-            selectedRate: undefined,
-            rates: [],
             errors: [error.response.data.message],
-            rateLoading: false
+            labelLoading: false
           };
           dispatch(updateOrder(newOrder));
           errorHandler(error, dispatch);
-        })
-        .finally(() => {
-          dispatch(setPurchasing(false));
-          dispatch(setShowBuyModal(false));
         });
     }
   }

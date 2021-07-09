@@ -13,8 +13,6 @@ import {
 import { SERVER_ROUTES } from '../../shared/utils/constants';
 import axios from '../../shared/utils/axios.base';
 import errorHandler from '../../shared/components/errorHandler';
-import { findCheapestRate } from '../../shared/utils/rates.helper';
-import checkOrderRateErrors from '../../shared/utils/order.helper';
 
 const initialState: OrdersState = {
   orders: [],
@@ -26,10 +24,8 @@ const initialState: OrdersState = {
   savingPackInfo: false,
   showOrderAddressModal: false,
   showSelectAddressModal: false,
-  showBuyModal: false,
   purchasing: false,
   purchasingOrderId: undefined,
-  showPurchasedModal: false,
   redirectOrders: false,
   showCsvModal: false,
   csvData: undefined,
@@ -78,9 +74,6 @@ export const ordersSlice = createSlice({
     setShowSelectAddressModal: (state, action: PayloadAction<boolean>) => {
       state.showSelectAddressModal = action.payload;
     },
-    setShowBuyModal: (state, action: PayloadAction<boolean>) => {
-      state.showBuyModal = action.payload;
-    },
     setPurchasing: (state, action: PayloadAction<boolean>) => {
       state.purchasing = action.payload;
     },
@@ -89,9 +82,6 @@ export const ordersSlice = createSlice({
       action: PayloadAction<string | undefined>
     ) => {
       state.purchasingOrderId = action.payload;
-    },
-    setShowPurchasedModal: (state, action: PayloadAction<boolean>) => {
-      state.showPurchasedModal = action.payload;
     },
     setRedirectOrders: (state, action: PayloadAction<boolean>) => {
       state.redirectOrders = action.payload;
@@ -128,10 +118,8 @@ export const {
   setSavingPackInfo,
   setShowOrderAddressModal,
   setShowSelectAddressModal,
-  setShowBuyModal,
   setPurchasing,
   setPurchasingOrderId,
-  setShowPurchasedModal,
   setRedirectOrders,
   setShowCsvModal,
   setCsvData,
@@ -147,7 +135,7 @@ export const fetchOrdersHandler = (): AppThunk => (
   if (user) {
     dispatch(setLoading(true));
     axios
-      .get(SERVER_ROUTES.ORDERS, {
+      .get(SERVER_ROUTES.CLIENT_SHIPMENTS, {
         headers: {
           Authorization: `${user.token_type} ${user.token}`
         },
@@ -172,7 +160,7 @@ export const createOrderHandler = (data: CreateOrderData): AppThunk => (
   if (user) {
     dispatch(setLoading(true));
     axios
-      .post(SERVER_ROUTES.ORDERS, data, {
+      .post(SERVER_ROUTES.CLIENT_SHIPMENTS, data, {
         headers: {
           Authorization: `${user.token_type} ${user.token}`
         }
@@ -186,45 +174,6 @@ export const createOrderHandler = (data: CreateOrderData): AppThunk => (
         errorHandler(error, dispatch);
       })
       .finally(() => dispatch(setLoading(false)));
-  }
-};
-
-export const fetchRatesForOrderHandler = (id: string): AppThunk => (
-  dispatch: Dispatch,
-  getState: () => RootState
-) => {
-  const user = getState().currentUser.currentUser;
-  const curOrder = getState().orders.orders.find((ele) => ele.id === id);
-  if (user && curOrder && checkOrderRateErrors(curOrder, false).length === 0) {
-    dispatch(updateOrder({ ...curOrder, rateLoading: true }));
-    axios
-      .get(`${SERVER_ROUTES.ORDERS}/rates/${id}`, {
-        headers: {
-          Authorization: `${user.token_type} ${user.token}`
-        }
-      })
-      .then((response) => {
-        const ratesData = response.data;
-        const newOrder: Order = {
-          ...curOrder,
-          rates: ratesData.rates,
-          errors: ratesData.errors,
-          selectedRate: findCheapestRate(ratesData.rates),
-          rateLoading: false
-        };
-        dispatch(updateOrder(newOrder));
-      })
-      .catch((error) => {
-        const newOrder: Order = {
-          ...curOrder,
-          selectedRate: undefined,
-          rates: [],
-          errors: [error.response.data.message],
-          rateLoading: false
-        };
-        dispatch(updateOrder(newOrder));
-        errorHandler(error, dispatch);
-      });
   }
 };
 
@@ -312,7 +261,7 @@ export const updateOrderHanlder = (data: UpdateData): AppThunk => (
   if (user) {
     dispatch(setLoading(true));
     axios
-      .put(SERVER_ROUTES.ORDERS, data, {
+      .put(SERVER_ROUTES.CLIENT_SHIPMENTS, data, {
         headers: {
           Authorization: `${user.token_type} ${user.token}`
         }
@@ -320,9 +269,6 @@ export const updateOrderHanlder = (data: UpdateData): AppThunk => (
       .then((response) => {
         const order = response.data;
         dispatch(updateOrder(order));
-        if (order.packageInfo && !data.shipmentOptions) {
-          dispatch(fetchRatesForOrderHandler(order.id));
-        }
       })
       .catch((error) => {
         errorHandler(error, dispatch);
@@ -344,7 +290,7 @@ export const saveOrderPackageInfo = (data: UpdateData): AppThunk => (
   if (user) {
     dispatch(setSavingPackInfo(true));
     axios
-      .put(SERVER_ROUTES.ORDERS, data, {
+      .put(SERVER_ROUTES.CLIENT_SHIPMENTS, data, {
         headers: {
           Authorization: `${user.token_type} ${user.token}`
         }
@@ -353,7 +299,6 @@ export const saveOrderPackageInfo = (data: UpdateData): AppThunk => (
         const order = response.data;
         dispatch(updateOrder(order));
         dispatch(setSavingPackInfo(false));
-        dispatch(fetchRatesForOrderHandler(order.id));
       })
       .catch((error) => {
         errorHandler(error, dispatch);
@@ -379,10 +324,6 @@ export const selectShowOrderAddressModal = (state: RootState): boolean =>
   state.orders.showOrderAddressModal;
 export const selectShowSelectAddressModal = (state: RootState): boolean =>
   state.orders.showSelectAddressModal;
-export const selectShowBuyModal = (state: RootState): boolean =>
-  state.orders.showBuyModal;
-export const selectShowPurchasedModal = (state: RootState): boolean =>
-  state.orders.showPurchasedModal;
 export const selectPurchasing = (state: RootState): boolean =>
   state.orders.purchasing;
 export const selectPurchasingOrderId = (state: RootState): string | undefined =>

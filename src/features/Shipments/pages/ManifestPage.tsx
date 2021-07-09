@@ -23,14 +23,14 @@ import { selectLanguage } from '../../../redux/i18n/intlSlice';
 import { CARRIERS, LOCALES } from '../../../shared/utils/constants';
 import {
   createManifestsHandler,
-  fetchLabelsHandler,
+  fetchManifestShipmentHandler,
   fetchManifestsHandler,
-  selectLabels,
+  selectShipments,
   selectManifestLoading,
   selectManifests,
   selectShipmentLoading
 } from '../../../redux/shipments/shipmentSlice';
-import { Label } from '../../../custom_types/order-page';
+import { Order } from '../../../custom_types/order-page';
 import NoData from '../../../shared/components/NoData';
 import { selectClientAccounts } from '../../../redux/settings/carriersSlice';
 import { ClientAccount } from '../../../custom_types/carrier-page';
@@ -43,7 +43,7 @@ const ManifestPage = (): ReactElement => {
   const language = useSelector(selectLanguage);
   const [shippingDate, setShippingDate] = useState(dayjs());
   const [carrier, setCarrierRef] = useState<ClientAccount | undefined>();
-  const labels = useSelector(selectLabels);
+  const shipments = useSelector(selectShipments);
   const manifests = useSelector(selectManifests);
   const loading = useSelector(selectShipmentLoading);
   const manifestLoading = useSelector(selectManifestLoading);
@@ -58,14 +58,14 @@ const ManifestPage = (): ReactElement => {
       setCarrierRef(defaultCarrier);
 
       dispatch(
-        fetchLabelsHandler(
-          defaultCarrier.carrierRef,
+        fetchManifestShipmentHandler(
+          defaultCarrier.accountId,
           dayjs(shippingDate).format('YYYY-MM-DD')
         )
       );
       dispatch(
         fetchManifestsHandler(
-          defaultCarrier.carrierRef,
+          defaultCarrier.id,
           dayjs(shippingDate).format('YYYY-MM-DD')
         )
       );
@@ -76,21 +76,37 @@ const ManifestPage = (): ReactElement => {
   const onDateChangedHandler = (date: Dayjs | null) => {
     if (!date || !carrier) return;
     setShippingDate(date);
-    dispatch(fetchLabelsHandler(carrier.carrierRef, date.format('YYYY-MM-DD')));
     dispatch(
-      fetchManifestsHandler(carrier.carrierRef, date.format('YYYY-MM-DD'))
+      fetchManifestShipmentHandler(carrier.accountId, date.format('YYYY-MM-DD'))
     );
+    dispatch(fetchManifestsHandler(carrier.id, date.format('YYYY-MM-DD')));
   };
 
-  const groupLabelsHandler = (
-    data: Label[]
+  const onCarrierChangeHandler = (value: string) => {
+    const account = clientAccounts.find((ele) => ele.accountName === value);
+    if (shippingDate && account) {
+      setCarrierRef(account);
+      dispatch(
+        fetchManifestShipmentHandler(
+          account.accountId,
+          shippingDate.format('YYYY-MM-DD')
+        )
+      );
+      dispatch(
+        fetchManifestsHandler(account.id, shippingDate.format('YYYY-MM-DD'))
+      );
+    }
+  };
+
+  const groupShipmentsHandler = (
+    data: Order[]
   ): { service: string; count: number }[] => {
     const result: Record<string, number> = {};
     data.forEach((ele) => {
-      if (!result[ele.service]) {
-        result[ele.service] = 1;
+      if (!result[ele.service!.name]) {
+        result[ele.service!.name] = 1;
       } else {
-        result[ele.service] += 1;
+        result[ele.service!.name] += 1;
       }
     });
 
@@ -118,16 +134,14 @@ const ManifestPage = (): ReactElement => {
     accounts: ClientAccount[]
   ): ReactElement[] => {
     const result: ReactElement[] = [];
-    const accountSet = new Set();
     for (let i = 0; i < accounts.length; i += 1) {
       const clientAccount = accounts[i];
-      if (
-        !accountSet.has(clientAccount.carrierRef) &&
-        clientAccount.carrier === CARRIERS.DHL_ECOM
-      ) {
-        accountSet.add(clientAccount.carrierRef);
+      if (clientAccount.carrier === CARRIERS.DHL_ECOM) {
         result.push(
-          <Option value={clientAccount.carrierRef}>
+          <Option
+            key={clientAccount.accountName}
+            value={clientAccount.accountName}
+          >
             {clientAccount.accountName}
           </Option>
         );
@@ -141,8 +155,8 @@ const ManifestPage = (): ReactElement => {
       <PageHeader title="Manifests" />
       <Divider style={{ marginTop: '0px', marginBottom: '10px' }} />
       <Row gutter={20}>
-        <Col span={6}>
-          <Form.Item label="Shipping Date">
+        <Col span={8}>
+          <Form.Item label="邮寄日期">
             <DatePicker
               locale={language === LOCALES.CHINESE ? zh_CN : en_US}
               allowClear={false}
@@ -152,13 +166,14 @@ const ManifestPage = (): ReactElement => {
             />
           </Form.Item>
         </Col>
-        <Col span={6}>
-          <Form.Item label="Carrier Account">
+        <Col span={10}>
+          <Form.Item label="物流账号">
             <Select
               defaultValue={
                 clientAccounts.find((ele) => ele.carrier === CARRIERS.DHL_ECOM)
-                  ?.carrierRef
+                  ?.accountName
               }
+              onChange={onCarrierChangeHandler}
             >
               {getCarrierAccountOptions(clientAccounts)}
             </Select>
@@ -182,14 +197,14 @@ const ManifestPage = (): ReactElement => {
             headStyle={{ backgroundColor: '#ddd' }}
           >
             <Spin spinning={loading}>
-              {labels.length === 0 ? (
-                <div>You have no label to manifest</div>
+              {shipments.length === 0 ? (
+                <div>没有可以 manifest 的面单</div>
               ) : (
                 <>
                   <Table<{ service: string; count: number }>
                     rowKey={(record) => record.service}
                     columns={labelColumns}
-                    dataSource={groupLabelsHandler(labels)}
+                    dataSource={groupShipmentsHandler(shipments)}
                     size="small"
                     pagination={false}
                     locale={{
@@ -202,15 +217,15 @@ const ManifestPage = (): ReactElement => {
                     onClick={() =>
                       dispatch(
                         createManifestsHandler(
-                          carrier?.carrier,
-                          carrier?.carrierRef,
+                          carrier?.id,
+                          carrier?.accountId,
                           shippingDate.format('YYYY-MM-DD'),
-                          labels
+                          shipments
                         )
                       )
                     }
                   >
-                    Create Manifest
+                    生成 Manifest
                   </Button>
                 </>
               )}
@@ -218,7 +233,7 @@ const ManifestPage = (): ReactElement => {
           </Card>
         </Col>
         <Col span={12}>
-          <div style={{ fontSize: '22px' }}>Manifest History</div>
+          <div style={{ fontSize: '22px' }}>Manifest 记录</div>
           <Card
             size="small"
             title="Existing Manifest"
@@ -226,7 +241,7 @@ const ManifestPage = (): ReactElement => {
           >
             <Spin spinning={manifestLoading}>
               {manifests.length === 0 ? (
-                <div>You have no manifest created</div>
+                <div>暂无 manifest</div>
               ) : (
                 <ManifestItems manifests={manifests} />
               )}

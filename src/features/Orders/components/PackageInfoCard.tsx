@@ -11,7 +11,6 @@ interface PackageInfoCardProps {
 const PackageInfoCard = ({ order }: PackageInfoCardProps): ReactElement => {
   return (
     <Card
-      style={{ marginTop: '20px' }}
       size="small"
       title={
         <strong style={order.packageInfo ? {} : { color: 'red' }}>

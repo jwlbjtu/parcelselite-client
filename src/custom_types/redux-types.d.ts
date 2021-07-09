@@ -55,10 +55,8 @@ export interface OrdersState {
   savingPackInfo: boolean;
   showOrderAddressModal: boolean;
   showSelectAddressModal: boolean;
-  showBuyModal: boolean;
   purchasing: boolean;
   purchasingOrderId: string | undefined;
-  showPurchasedModal: boolean;
   redirectOrders: boolean;
   showCsvModal: boolean;
   csvData: { name: string; list: string[][] } | undefined;
@@ -67,8 +65,7 @@ export interface OrdersState {
 }
 
 export interface ShipmentState {
-  shipments: Shipment[];
-  labels: Label[];
+  shipments: Order[];
   manifests: Manifest[];
   loading: boolean;
   manifestLoading: boolean;

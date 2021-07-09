@@ -4,10 +4,8 @@ import { FormattedMessage } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import converter from 'convert-units';
 import {
-  ExclamationCircleOutlined,
   ExclamationCircleTwoTone,
   FileDoneOutlined,
-  FileOutlined,
   FileTextOutlined
 } from '@ant-design/icons';
 import { Item, Order } from '../../../../custom_types/order-page';
@@ -69,7 +67,7 @@ const ItemsCard = ({ order }: ItemsCardProps): ReactElement => {
         );
       }
     };
-    if (order.orderStatus !== OrderStatus.FULFILLED) {
+    if (order.status !== OrderStatus.FULFILLED) {
       firstCol = {
         title: (
           <small>
@@ -150,6 +148,7 @@ const ItemsCard = ({ order }: ItemsCardProps): ReactElement => {
   return (
     <Card
       size="small"
+      style={{ marginBottom: '25px' }}
       title={
         <strong
           style={
@@ -169,7 +168,7 @@ const ItemsCard = ({ order }: ItemsCardProps): ReactElement => {
         item={curItem}
         isCustom={isCustom}
       />
-      {order.orderStatus === OrderStatus.FULFILLED && (
+      {order.status === OrderStatus.FULFILLED && (
         <Space
           style={{
             padding: '15px 20px',

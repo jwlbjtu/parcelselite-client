@@ -23,30 +23,21 @@ const CsvProcessModal = ({ show }: CsvProcessModalProps): ReactElement => {
   return (
     <Modal
       visible={show}
-      title="Upload in Progess"
+      title="正在处理上传数据"
       closable={false}
       footer={
         <Space>
           <Button
             type="link"
-            onClick={() =>
-              clickedHandler(`${UI_ROUTES.ORDERS}${UI_ROUTES.CSV_IMPORT}`)
-            }
-          >
-            Import Another CSV File
-          </Button>
-          <div>|</div>
-          <Button
-            type="link"
             onClick={() => clickedHandler(`${UI_ROUTES.ORDERS}`)}
           >
-            Go to Orders Page
+            前往物流订单页面
           </Button>
         </Space>
       }
     >
-      Your orders are being imported. You will receive an email notification at{' '}
-      {user && user.email} when the import has been processed.
+      您的订单已上传, 后台正在处理中. 处理完成后我们将发送邮件通知到邮箱：{' '}
+      {user && user.email}。数据处理过程中，暂时无法再次上传订单。
     </Modal>
   );
 };

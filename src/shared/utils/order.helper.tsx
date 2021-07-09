@@ -2,38 +2,42 @@ import React, { ReactElement } from 'react';
 import dayjs from 'dayjs';
 import { FormattedMessage } from 'react-intl';
 import convertlib from 'convert-units';
-import { Order, Rate } from '../../custom_types/order-page';
+import { Order } from '../../custom_types/order-page';
 import {
   Country,
   COUNTRY_PHONE_LENGTH,
   OrderStatus,
   WeightUnit,
   STATES,
-  CARRIERS
+  CARRIERS,
+  COUNTRY_NAMES
 } from './constants';
-import { isOrderInternational } from './helpers';
+import { getCarrierServices, isOrderInternational } from './helpers';
 
 const checkOrderRateErrors = (
   order: Order,
   onOrderPage: boolean
 ): ReactElement[] => {
   const results = [];
+  if (!order.carrierAccount || !order.accountName || !order.service) {
+    results.push(<div>请选择物流账号和服务</div>);
+  }
+
+  if (order.carrier === CARRIERS.DHL_ECOM && !order.facility) {
+    results.push(<div>请选择分拣中心</div>);
+  }
+
   if (!order.packageInfo) {
     results.push(
       <>
         <FormattedMessage id="package_info_missing" />{' '}
-        {!onOrderPage && (
-          <a href="#package-info">
-            <FormattedMessage id="jump_to_error" />
-          </a>
-        )}
       </>
     );
   }
 
   if (
     dayjs(order.shipmentOptions.shipmentDate).isBefore(dayjs(), 'day') &&
-    (!onOrderPage || order.orderStatus !== OrderStatus.FULFILLED)
+    (!onOrderPage || order.status !== OrderStatus.FULFILLED)
   ) {
     results.push(
       <>
@@ -43,49 +47,92 @@ const checkOrderRateErrors = (
   }
 
   // Recipient Phone
-  if (!order.recipient.phone) {
+  if (!order.toAddress.phone) {
     results.push(<div>Recipient phone is required.</div>);
   } else {
-    const phone = order.recipient.phone;
-    const length = COUNTRY_PHONE_LENGTH[order.recipient.country];
-    const message = `Recipient phone should be ${length} numeric charactors`;
+    const phone = order.toAddress.phone;
+    const length = COUNTRY_PHONE_LENGTH[order.toAddress.country];
+    const message = `收件人所在地区手机号码应为${length}位数字`;
     if (/\D/.test(phone) || phone.length !== length) {
       results.push(<div>{message}</div>);
     }
   }
 
   // State Code
-  if (order.recipient.country === Country.USA) {
-    if (!order.recipient.state) {
-      results.push(<div>Recipient state is required</div>);
+  if (order.toAddress.country === Country.USA) {
+    if (!order.toAddress.state) {
+      results.push(<div>收件人省份信息缺失</div>);
     } else if (
-      !Object.keys(STATES[Country.USA]).includes(order.recipient.state)
+      !Object.keys(STATES[Country.USA]).includes(order.toAddress.state)
     ) {
-      results.push(
-        <div>Recipient state should be a valid two letters code. e.g. MA</div>
-      );
+      results.push(<div>收件人省份应为双字母缩写，例如: MA</div>);
     }
   }
 
   if (order.sender.country === Country.USA) {
     if (!order.sender.state) {
-      results.push(<div>Sender state is required</div>);
+      results.push(<div>寄件人省份信息缺失</div>);
     } else if (!Object.keys(STATES[Country.USA]).includes(order.sender.state)) {
+      results.push(<div>寄件人省份应为双字母缩写，例如: MA</div>);
+    }
+  }
+
+  // Check Package Numbers
+  if (
+    order.carrier === CARRIERS.DHL_ECOM ||
+    order.carrier === CARRIERS.USPS ||
+    (order.carrier === CARRIERS.UPS &&
+      (order.service!.id === '92' || order.service!.id === '93'))
+  ) {
+    if (order.morePackages && order.morePackages.length > 0) {
+      results.push(<div>所选物流账号或服务不支持多个包裹</div>);
+    }
+  }
+
+  // Check Package Weight
+  if (
+    (order.carrier === CARRIERS.DHL_ECOM && order.service?.key === 'FLAT') ||
+    (order.carrier === CARRIERS.UPS && order.service?.id === '92')
+  ) {
+    const packageInfo = order.packageInfo!;
+    const weightLB = convertlib(packageInfo.weight.value)
+      .from(packageInfo.weight.unitOfMeasure)
+      .to(WeightUnit.LB);
+    if (weightLB > 1) results.push(<div>所选服务包裹重量不得超过 1LB</div>);
+  }
+
+  if (!isOrderInternational(order) && order.service && order.carrier) {
+    const intlServices = getCarrierServices(order.carrier, false);
+    if (!intlServices.map((ele) => ele.key).includes(order.service.key)) {
       results.push(
-        <div>Sender state should be a valid two letters code. e.g. MA</div>
+        <div>{`服务${order.service.name}不支持${
+          COUNTRY_NAMES[order.toAddress.country]
+        }区域`}</div>
       );
     }
   }
 
   // International Checks
   if (isOrderInternational(order)) {
+    // Service Check
+    if (order.service && order.carrier) {
+      const intlServices = getCarrierServices(order.carrier, true);
+      if (!intlServices.map((ele) => ele.key).includes(order.service.key)) {
+        results.push(
+          <div>{`服务${order.service.name}不支持${
+            COUNTRY_NAMES[order.toAddress.country]
+          }区域`}</div>
+        );
+      }
+    }
+
     // Sender Phone
     if (!order.sender.phone) {
-      results.push(<div>Sender phone is required.</div>);
+      results.push(<div>寄件人电话缺失</div>);
     } else {
       const phone = order.sender.phone;
       const length = COUNTRY_PHONE_LENGTH[order.sender.country];
-      const message = `Sender phone should be ${length} numeric charactors`;
+      const message = `寄件人所在地区手机号码应为${length}位数字`;
       if (/\D/.test(phone) || phone.length !== length) {
         results.push(<div>{message}</div>);
       }
@@ -98,16 +145,12 @@ const checkOrderRateErrors = (
       !order.customDeclaration.incoterm ||
       !order.customDeclaration.signingPerson
     ) {
-      results.push(<div>Custom Declaratio is not completed</div>);
+      results.push(<div>海关申报信息不完整</div>);
     }
 
     // Custom Items
     if (!order.customItems || order.customItems.length === 0) {
-      results.push(
-        <div>
-          At lease one item is required to complete the customs declaration
-        </div>
-      );
+      results.push(<div>请填写至少一个海关申报物品信息</div>);
     }
 
     // Custom Items Weight vs Package Weight
@@ -125,18 +168,23 @@ const checkOrderRateErrors = (
         0
       );
 
-      const packageWeight = convertlib(order.packageInfo.weight.value)
-        .from(order.packageInfo.weight.weightUnit)
+      let packageWeight = convertlib(order.packageInfo.weight.value)
+        .from(order.packageInfo.weight.unitOfMeasure)
         .to(WeightUnit.LB);
-      if (itemWeight > packageWeight) {
-        results.push(
-          <div>
-            We cannot generate rates because the total order item weight is
-            heavier than the total package weight. Please check your order
-            items, and then update your{' '}
-            {!onOrderPage && <a href="#package-info">package info</a>}
-          </div>
+      if (order.morePackages) {
+        const morePackageWeight = order.morePackages.reduce(
+          (acumulator, ele) =>
+            acumulator +
+            convertlib(ele.weight.value)
+              .from(ele.weight.unitOfMeasure)
+              .to(WeightUnit.LB),
+          0
         );
+        packageWeight += morePackageWeight;
+      }
+
+      if (itemWeight > packageWeight) {
+        results.push(<div>报关物品总重量不得大于包裹信息的总重量</div>);
       }
     }
   }
@@ -144,9 +192,9 @@ const checkOrderRateErrors = (
   return results;
 };
 
-export const checkOrderLabelErrors = (order: Order, rate: Rate): string[] => {
+export const checkOrderLabelErrors = (order: Order): string[] => {
   const results = [];
-  if (isOrderInternational(order) && rate.carrier === CARRIERS.USPS) {
+  if (isOrderInternational(order) && order.carrier === CARRIERS.USPS) {
     if (order.customItems && order.customItems.length > 0) {
       for (let i = 0; i < order.customItems.length; i += 1) {
         const item = order.customItems[i];
