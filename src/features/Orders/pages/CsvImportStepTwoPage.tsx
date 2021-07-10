@@ -177,8 +177,7 @@ const CsvImportStepTwoPage = (): ReactElement => {
         .catch((err) => {
           errorHandler(err, dispatch);
           const newError: CsvUploadError = {
-            description:
-              'Failed to upload CSV file. Please try another file or try again later',
+            description: '上传失败，请检查上传文件或联系我们.',
             fields: []
           };
           setError(newError);

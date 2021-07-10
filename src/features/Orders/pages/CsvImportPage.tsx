@@ -25,14 +25,14 @@ const CsvImportPage = (): ReactElement => {
   const dispatch = useDispatch();
   const history = useHistory();
   const showCsvModal = useSelector(selectShowCsvModal);
-  const [showError, setShowError] = useState(false);
+  const [showError, setShowError] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const user = useSelector(selectCurUser);
   const address = useSelector(selectAddresses);
 
   useEffect(() => {
     setLoading(false);
-    setShowError(false);
+    setShowError(undefined);
     dispatch(setCsvData(undefined));
     dispatch(fetchAddressesHandler());
   }, [dispatch]);
@@ -49,7 +49,9 @@ const CsvImportPage = (): ReactElement => {
       );
     } else if (info.file.status === 'error') {
       setLoading(false);
-      setShowError(true);
+      setShowError(
+        info.file.response.message || '上传失败，请检查上传文件或联系我们.'
+      );
     }
   };
 
@@ -66,7 +68,7 @@ const CsvImportPage = (): ReactElement => {
               style={{ padding: '3px 15px', marginBottom: '10px' }}
               type="error"
               showIcon
-              message="上传失败，请检查上传文件或联系我们."
+              message={showError}
             />
           )}
           {(!address || address.length <= 0) && (
