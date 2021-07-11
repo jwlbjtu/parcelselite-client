@@ -46,7 +46,7 @@ export interface UserResponse {
   firstName: string;
   lastName: string;
   userName: string;
-  companyName: string;
+  companyName?: string;
   logoImage: string;
   email: string;
   countryCode: string;
