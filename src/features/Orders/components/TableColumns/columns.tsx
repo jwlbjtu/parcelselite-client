@@ -12,6 +12,7 @@ import './columns.css';
 import PackageInfoColumn from './PackageInfoColumn';
 import ButtonColumn from './ButtonColumn';
 import LabelComponent from './LabelComponent';
+import { OrderStatus } from '../../../../shared/utils/constants';
 
 const columns = [
   {
@@ -58,7 +59,12 @@ const columns = [
     key: 'tracking',
     dataIndex: 'tracking',
     render: (tracking: string, record: Order): ReactElement => {
-      if (record.carrier && record.trackingId && record.service) {
+      if (
+        record.status === OrderStatus.FULFILLED &&
+        record.carrier &&
+        record.trackingId &&
+        record.service
+      ) {
         return <LabelComponent order={record} />;
       }
       return <div>暂无信息</div>;
