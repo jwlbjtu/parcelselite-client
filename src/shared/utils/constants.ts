@@ -42,7 +42,8 @@ export const SETTING_KEYS = [
 export const CARRIERS = {
   USPS: 'USPS',
   DHL_ECOM: 'DHL eCommerce',
-  UPS: 'UPS'
+  UPS: 'UPS',
+  FEDEX: 'FedEx'
 };
 
 export const USPS_INTL_SERVICE_IDS = {
@@ -442,4 +443,15 @@ export const USPS_INTL_SERVICES = [
     name: 'Priority Mail Express International'
   },
   { key: 'PM International', id: '2', name: 'Priority Mail International' }
+];
+
+export const FEDEX_SERVICES = [
+  { key: 'FEDEX_GROUND', name: 'FedEx Ground' },
+  { key: 'GROUND_HOME_DELIVERY', name: 'FedEx Gound Home Delivery' },
+  { key: 'SMART_POST', name: 'FedEx Ground Economy' }
+];
+
+export const FEDEX_INTL_SERVICES = [
+  { key: 'INTERNATIONAL_ECONOMY', name: 'FedEx International Economy' },
+  { key: 'INTERNATIONAL_PRIORITY', name: 'FedEx International PRIORITY' }
 ];
