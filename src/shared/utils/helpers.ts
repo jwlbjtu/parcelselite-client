@@ -5,6 +5,8 @@ import {
   Country,
   DHL_ECOMMERCE_INTL_SERVICES,
   DHL_ECOMMERCE_SERVICES,
+  FEDEX_INTL_SERVICES,
+  FEDEX_SERVICES,
   UPS_INTL_SERVICES,
   UPS_SERVICES,
   USPS_INTL_SERVICES,
@@ -39,6 +41,8 @@ export const getCarrierServices = (
       return isInternational ? UPS_INTL_SERVICES : UPS_SERVICES;
     case CARRIERS.USPS:
       return isInternational ? USPS_INTL_SERVICES : USPS_SERVICES;
+    case CARRIERS.FEDEX:
+      return isInternational ? FEDEX_INTL_SERVICES : FEDEX_SERVICES;
     default:
       return [];
   }

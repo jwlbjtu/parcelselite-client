@@ -480,9 +480,11 @@ const PackageInfoForm = ({
               </div>
             ))}
             {order.status !== OrderStatus.FULFILLED &&
-              order.carrier === CARRIERS.UPS &&
-              order.service!.id !== '92' &&
-              order.service!.id !== '93' && (
+              ((order.carrier === CARRIERS.UPS &&
+                order.service!.id !== '92' &&
+                order.service!.id !== '93') ||
+                (order.carrier === CARRIERS.FEDEX &&
+                  order.service!.key !== 'SMART_POST')) && (
                 <Form.Item>
                   <Button
                     type="dashed"
