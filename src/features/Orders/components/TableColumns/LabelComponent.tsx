@@ -39,6 +39,17 @@ const USPSTrackingItem = ({
   );
 };
 
+const FedexTrackingItem = ({
+  record,
+  tracking
+}: TrakingItemProps): ReactElement => {
+  return (
+    <div>
+      {getDisplayTracking(record.carrier!, tracking, record.service!.name)}
+    </div>
+  );
+};
+
 const UPSTrackingItem = ({
   record,
   tracking
@@ -119,6 +130,12 @@ const LabelComponent = ({ order }: LabelComponentProps): ReactElement => {
               )}
               {order.carrier === CARRIERS.DHL_ECOM && (
                 <DHLeCommerceTrackingItem
+                  record={order}
+                  tracking={order.trackingId!}
+                />
+              )}
+              {order.carrier === CARRIERS.FEDEX && (
+                <FedexTrackingItem
                   record={order}
                   tracking={order.trackingId!}
                 />
