@@ -300,7 +300,7 @@ export const SERVER_ROUTES = {
 export const DEFAULT_SERVER_HOST =
   process.env.NODE_ENV === 'production'
     ? process.env.REACT_APP_BACKEND_URL
-    : 'http://localhost:5000';
+    : 'http://localhost:8000';
 
 export const CSV_SAMPLE_FILE = 'parcelselite_sample_csv.csv';
 

@@ -101,7 +101,12 @@ const checkOrderRateErrors = (
     if (weightLB > 1) results.push(<div>所选服务包裹重量不得超过 1LB</div>);
   }
 
-  if (!isOrderInternational(order) && order.service && order.carrier) {
+  if (
+    !isOrderInternational(order) &&
+    order.service &&
+    order.service.key !== 'CUSTOM' &&
+    order.carrier
+  ) {
     const intlServices = getCarrierServices(order.carrier, false);
     if (!intlServices.map((ele) => ele.key).includes(order.service.key)) {
       results.push(
@@ -115,7 +120,7 @@ const checkOrderRateErrors = (
   // International Checks
   if (isOrderInternational(order)) {
     // Service Check
-    if (order.service && order.carrier) {
+    if (order.service && order.service.key !== 'CUSTOM' && order.carrier) {
       const intlServices = getCarrierServices(order.carrier, true);
       if (!intlServices.map((ele) => ele.key).includes(order.service.key)) {
         results.push(
