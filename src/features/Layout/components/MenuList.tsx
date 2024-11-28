@@ -1,4 +1,8 @@
-import { SettingOutlined, ShoppingOutlined } from '@ant-design/icons';
+import {
+  SettingOutlined,
+  ShopOutlined,
+  ShoppingOutlined
+} from '@ant-design/icons';
 import { Menu } from 'antd';
 import SubMenu from 'antd/lib/menu/SubMenu';
 import React, { ReactElement } from 'react';
@@ -14,6 +18,11 @@ const MenuList = (): ReactElement => {
       <Menu.Item key={UI_ROUTES.ORDERS} icon={<ShoppingOutlined />}>
         <NavLink to={UI_ROUTES.ORDERS}>
           <FormattedMessage id={UI_ROUTES.ORDERS} />
+        </NavLink>
+      </Menu.Item>
+      <Menu.Item key={UI_ROUTES.BILLING} icon={<ShopOutlined />}>
+        <NavLink to={UI_ROUTES.BILLING}>
+          <FormattedMessage id={UI_ROUTES.BILLING} />
         </NavLink>
       </Menu.Item>
       <SubMenu

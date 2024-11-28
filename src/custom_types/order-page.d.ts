@@ -168,3 +168,14 @@ export interface CsvTableRecord {
   option: number;
   data: string;
 }
+
+export interface UserShippingRecordsSearchQuery {
+  startDate: string;
+  endDate: string;
+  orderId?: string;
+  name?: string;
+  phone?: string;
+  trackingId?: string;
+  zip?: string;
+  status: string;
+}

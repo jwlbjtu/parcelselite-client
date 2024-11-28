@@ -226,7 +226,8 @@ const enUS = {
   copy: 'Copy',
   copied: 'Copied to Clipboard',
   wrong_format: 'Wrong Format',
-  account_balance: 'Balance'
+  account_balance: 'Balance',
+  account_deposit: 'Deposit'
 };
 
 export default enUS;

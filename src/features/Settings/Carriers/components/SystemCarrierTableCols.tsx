@@ -4,29 +4,29 @@ import { IService } from '../../../../custom_types/carrier-page';
 import { getCarrierLogo } from '../../../../shared/utils/logo.helper';
 
 const columns = [
-  {
-    title: '',
-    key: 'logo',
-    dataIndex: 'carrier',
-    render: (carrier: string): ReactElement => {
-      return (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'left',
-            alignItems: 'left'
-          }}
-        >
-          <Image
-            style={{ height: '80px', width: '130px', margin: '20px 40px' }}
-            src={getCarrierLogo(carrier)}
-            preview={false}
-          />{' '}
-          <div style={{ marginTop: '50px' }}>{carrier}</div>
-        </div>
-      );
-    }
-  },
+  // {
+  //   title: '',
+  //   key: 'logo',
+  //   dataIndex: 'carrier',
+  //   render: (carrier: string): ReactElement => {
+  //     return (
+  //       <div
+  //         style={{
+  //           display: 'flex',
+  //           justifyContent: 'left',
+  //           alignItems: 'left'
+  //         }}
+  //       >
+  //         <Image
+  //           style={{ height: '80px', width: '130px', margin: '20px 40px' }}
+  //           src={getCarrierLogo(carrier)}
+  //           preview={false}
+  //         />{' '}
+  //         <div style={{ marginTop: '50px' }}>{carrier}</div>
+  //       </div>
+  //     );
+  //   }
+  // },
   {
     title: '账号名称',
     key: 'accountName',

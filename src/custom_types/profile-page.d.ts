@@ -13,6 +13,7 @@ export interface UserInfo {
   countryCode: string;
   phone: string;
   balance: number;
+  deposit: number;
   currency: Currency;
   role: string;
   token_type: string;
@@ -52,6 +53,7 @@ export interface UserResponse {
   countryCode: string;
   phone: string;
   balance: number;
+  deposit: number;
   currency: Currency;
   role: string;
   isActive: boolean;

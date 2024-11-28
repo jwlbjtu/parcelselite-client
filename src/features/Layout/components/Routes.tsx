@@ -14,27 +14,29 @@ import CarrierPage from '../../Settings/Carriers/pages/CarrierPage';
 import LabelPage from '../../Settings/Labels/pages/LabelPage';
 import PackagePage from '../../Settings/Packages/pages/PackagePage';
 import ManifestPage from '../../Shipments/pages/ManifestPage';
+import BillingPage from '../../Settings/Account/components/BillingPage';
 
 const Routes = (): ReactElement => {
   const systemAccounts = useSelector(selectClientAccounts);
   return (
     <Switch>
-      <Route
+      {/* <Route
         path={`${UI_ROUTES.ORDERS}${UI_ROUTES.MANUAL}`}
         component={CreateOrderPage}
-      />
+      /> */}
       <Route
         path={`${UI_ROUTES.ORDERS}${UI_ROUTES.DETAIL}/:orderId`}
         component={OrderDetailPage}
       />
-      <Route
+      <Route path={UI_ROUTES.BILLING} component={BillingPage} />
+      {/* <Route
         path={`${UI_ROUTES.ORDERS}${UI_ROUTES.CSV_IMPORT}${UI_ROUTES.STEP_TWO}`}
         component={CsvImportStepTwoPage}
       />
       <Route
         path={`${UI_ROUTES.ORDERS}${UI_ROUTES.CSV_IMPORT}`}
         component={CsvImportPage}
-      />
+      /> */}
       <Route path={UI_ROUTES.ORDERS} component={OrdersPage} />
       {systemAccounts.findIndex((ele) => ele.carrier === CARRIERS.DHL_ECOM) >=
         0 && (
@@ -45,9 +47,9 @@ const Routes = (): ReactElement => {
       )}
       <Route path={UI_ROUTES.ACCOUNT} component={AccountPage} />
       <Route path={UI_ROUTES.CARRIERS} component={CarrierPage} exact />
-      <Route path={UI_ROUTES.ADDRESSES} component={AddressPage} exact />
-      <Route path={UI_ROUTES.LABELS} component={LabelPage} exact />
-      <Route path={UI_ROUTES.PACKAGES} component={PackagePage} exact />
+      {/* <Route path={UI_ROUTES.ADDRESSES} component={AddressPage} exact /> */}
+      {/* <Route path={UI_ROUTES.LABELS} component={LabelPage} exact /> */}
+      {/* <Route path={UI_ROUTES.PACKAGES} component={PackagePage} exact /> */}
       <Redirect from="/" to={UI_ROUTES.ORDERS} />
     </Switch>
   );

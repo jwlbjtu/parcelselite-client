@@ -10,6 +10,7 @@ const zhCN = {
   '/addresses': '预存地址',
   '/labels': '面单设置',
   '/packages': '包裹设置',
+  '/billing': '资费明细',
   // Order Page
   orders: '物流订单',
   order: '订单信息',
@@ -223,7 +224,8 @@ const zhCN = {
   copy: '复制',
   copied: '已复制',
   wrong_format: '格式错误',
-  account_balance: '账户余额'
+  account_balance: '账户余额',
+  account_deposit: '账户押金'
 };
 
 export default zhCN;

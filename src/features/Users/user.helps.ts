@@ -19,6 +19,7 @@ const convertUserResponse = (data: UserResponse) => {
     countryCode: data.countryCode,
     phone: data.phone,
     balance: data.balance,
+    deposit: data.deposit,
     currency: data.currency,
     role: data.role,
     token: data.token,

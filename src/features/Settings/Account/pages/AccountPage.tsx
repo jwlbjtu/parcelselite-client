@@ -28,16 +28,6 @@ const AccountPage = (): ReactElement => {
         >
           <ProfilePage />
         </TabPane>
-        <TabPane
-          key={`${UI_ROUTES.ACCOUNT}${UI_ROUTES.BILLING}`}
-          tab={
-            <Link to={`${UI_ROUTES.ACCOUNT}${UI_ROUTES.BILLING}`}>
-              <FormattedMessage id="billing" />
-            </Link>
-          }
-        >
-          <BillingPage />
-        </TabPane>
       </Tabs>
     </div>
   );

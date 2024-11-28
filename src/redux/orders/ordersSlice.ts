@@ -3,7 +3,8 @@ import { UpdateData } from '../../custom_types/common';
 import {
   CreateOrderData,
   ItemUpdateData,
-  Order
+  Order,
+  UserShippingRecordsSearchQuery
 } from '../../custom_types/order-page';
 import {
   AppThunk,
@@ -13,6 +14,10 @@ import {
 import { SERVER_ROUTES } from '../../shared/utils/constants';
 import axios from '../../shared/utils/axios.base';
 import errorHandler from '../../shared/components/errorHandler';
+import {
+  ShipmentStatus,
+  ShippingRecord
+} from '../../features/Orders/components/TableColumns/columns';
 
 const initialState: OrdersState = {
   orders: [],
@@ -37,13 +42,13 @@ export const ordersSlice = createSlice({
   name: 'orders',
   initialState,
   reducers: {
-    setOrdersData: (state, action: PayloadAction<Order[]>) => {
+    setOrdersData: (state, action: PayloadAction<ShippingRecord[]>) => {
       state.orders = action.payload;
     },
-    createOrder: (state, action: PayloadAction<Order>) => {
+    createOrder: (state, action: PayloadAction<ShippingRecord>) => {
       state.orders.unshift(action.payload);
     },
-    updateOrder: (state, action: PayloadAction<Order>) => {
+    updateOrder: (state, action: PayloadAction<ShippingRecord>) => {
       const oldOrder = state.orders.find(
         (item) => item.id === action.payload.id
       );
@@ -127,15 +132,14 @@ export const {
   setOrderFilter
 } = ordersSlice.actions;
 
-export const fetchOrdersHandler = (): AppThunk => (
-  dispatch: Dispatch,
-  getState: () => RootState
-) => {
+export const fetchOrdersHandler = (
+  searchQuery: UserShippingRecordsSearchQuery
+): AppThunk => (dispatch: Dispatch, getState: () => RootState) => {
   const user = getState().currentUser.currentUser;
   if (user) {
     dispatch(setLoading(true));
     axios
-      .get(SERVER_ROUTES.CLIENT_SHIPMENTS, {
+      .post(SERVER_ROUTES.CLIENT_SHIPMENTS, searchQuery, {
         headers: {
           Authorization: `${user.token_type} ${user.token}`
         },
@@ -148,6 +152,31 @@ export const fetchOrdersHandler = (): AppThunk => (
       .catch((error) => {
         errorHandler(error, dispatch);
       })
+      .finally(() => dispatch(setLoading(false)));
+  }
+};
+
+export const cancelShippingRecord = (
+  searchQuery: UserShippingRecordsSearchQuery,
+  record: ShippingRecord
+): AppThunk => (dispatch: Dispatch, getState: () => RootState) => {
+  const user = getState().currentUser.currentUser;
+  if (user) {
+    dispatch(setLoading(true));
+    axios
+      .put(
+        `${SERVER_ROUTES.CLIENT_SHIPMENTS}/update`,
+        { recordId: record.id, status: ShipmentStatus.DEL_PENDING },
+        {
+          headers: {
+            Authorization: `${user.token_type} ${user.token}`
+          }
+        }
+      )
+      .then(() => {
+        dispatch(fetchOrdersHandler(searchQuery));
+      })
+      .catch((error) => errorHandler(error, dispatch))
       .finally(() => dispatch(setLoading(false)));
   }
 };
@@ -309,7 +338,8 @@ export const saveOrderPackageInfo = (data: UpdateData): AppThunk => (
   }
 };
 
-export const selectOrders = (state: RootState): Order[] => state.orders.orders;
+export const selectOrders = (state: RootState): ShippingRecord[] =>
+  state.orders.orders;
 export const selectLoading = (state: RootState): boolean =>
   state.orders.loading;
 export const selectRedirectOrderId = (state: RootState): string | undefined =>

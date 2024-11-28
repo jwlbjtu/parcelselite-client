@@ -13,6 +13,8 @@ import dhlLogo from '../../assets/images/carriers/dhl-ecommerce-logo.svg';
 import uspsLogo from '../../assets/images/carriers/usps-logo.svg';
 import upsLogo from '../../assets/images/carriers/ups-logo.svg';
 import fedexLogo from '../../assets/images/carriers/fedex-logo.svg';
+import ruiyunLogo from '../../assets/images/carriers/ruiyun-logo.png';
+import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
 
 export const getStoreIcon = (company: string | undefined): string => {
   switch (company?.toLowerCase()) {
@@ -50,6 +52,10 @@ export const getCarrierIcon = (carrier: string): string => {
       return upsIcon;
     case CARRIERS.FEDEX:
       return fedexIcon;
+    case CARRIERS.RUI_YUN:
+      return ruiyunLogo;
+    case CARRIERS.USPS3:
+      return usps3Logo;
     default:
       return '';
   }
@@ -65,6 +71,10 @@ export const getCarrierLogo = (carrier: string): string => {
       return upsLogo;
     case CARRIERS.FEDEX:
       return fedexLogo;
+    case CARRIERS.RUI_YUN:
+      return ruiyunLogo;
+    case CARRIERS.USPS3:
+      return usps3Logo;
     default:
       return '';
   }

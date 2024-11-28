@@ -21,6 +21,11 @@ const HeaderMenu = (): ReactElement => {
             value={curUser.balance}
             precision={2}
           />
+          <Statistic
+            prefix={`${intl.formatMessage({ id: 'account_deposit' })}: $`}
+            value={curUser.deposit}
+            precision={2}
+          />
         </Space>
       )}
       <Space className="right" style={{ marginRight: '24px' }}>

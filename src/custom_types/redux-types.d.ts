@@ -1,8 +1,8 @@
-import { Address } from './address-page';
+import { Address, ShippingRecord } from './address-page';
 import { Label, Order } from './order-page';
 import { ClientAccount } from './carrier-page';
 import { User } from './profile-page';
-import { Transaction } from './billing-page';
+import { Billing, Transaction } from './billing-page';
 import { Shipment } from './shipment-page';
 import { DistanceUnit, WeightUnit } from '../shared/utils/constants';
 
@@ -41,12 +41,12 @@ export interface CurrentUserState {
 }
 
 export interface BillingState {
-  transactions: Transaction[];
+  transactions: Billing[];
   transactionTableLoading: boolean;
 }
 
 export interface OrdersState {
-  orders: Order[];
+  orders: ShippingRecord[];
   filters: Record<string, string>;
   loading: boolean;
   redirectOrderId: string | undefined;

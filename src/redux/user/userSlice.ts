@@ -121,15 +121,15 @@ export const loginUserHandler = (info: {
         addresses
       } = convertUserResponse(userData);
       dispatch(setCurrentUser(user));
-      dispatch(setLabelSettings(labelpageData));
-      dispatch(setPackagesUnits(packagesUnitSettings));
+      // dispatch(setLabelSettings(labelpageData));
+      // dispatch(setPackagesUnits(packagesUnitSettings));
       dispatch(setClientAccounts(carrierSettings));
-      dispatch(setAddresses(addresses));
+      // dispatch(setAddresses(addresses));
       const remaintingTime = user.tokenExpire - Date.now();
       const logoutTimer = setTimeout(() => {
         dispatch(setCurrentUser(undefined));
         dispatch(setClientAccounts([]));
-        dispatch(setAddresses([]));
+        // dispatch(setAddresses([]));
         dispatch(setOrdersData([]));
       }, remaintingTime);
       dispatch(setUserTimeout(logoutTimer));
@@ -231,7 +231,8 @@ export const refreshUserHandler = (): AppThunk => (
         const data = response.data;
         const newUser: User = {
           ...user,
-          balance: data.balance
+          balance: data.balance,
+          deposit: data.deposit
         };
         dispatch(setCurrentUser(newUser));
       })
@@ -241,55 +242,55 @@ export const refreshUserHandler = (): AppThunk => (
   }
 };
 
-export const purchaseOrderHandler = (
-  order: Order,
-  isTest: boolean
-): AppThunk => (dispatch: Dispatch, getState: () => RootState) => {
-  const user = getState().currentUser.currentUser;
-  if (user && order.packageInfo) {
-    // Check Errors
-    const result = checkOrderLabelErrors(order);
-    if (result.length > 0) {
-      const newOrder: Order = {
-        ...order,
-        errors: result,
-        labelLoading: false
-      };
-      dispatch(updateOrder(newOrder));
-    } else {
-      dispatch(updateOrder({ ...order, labelLoading: true }));
-      axios
-        .post(
-          `${SERVER_ROUTES.CLIENT_SHIPMENTS}/label`,
-          { id: order.id, isTest },
-          {
-            headers: {
-              Authorization: `${user.token_type} ${user.token}`
-            }
-          }
-        )
-        .then((response) => {
-          const resData = response.data;
-          const newOrder: Order = {
-            ...resData.order,
-            errors: resData.errors || [],
-            labelLoading: false
-          };
-          dispatch(updateCurrentUserBalance(resData.balance));
-          dispatch(updateOrder(newOrder));
-        })
-        .catch((error) => {
-          const newOrder: Order = {
-            ...order,
-            errors: [error.response.data.message],
-            labelLoading: false
-          };
-          dispatch(updateOrder(newOrder));
-          errorHandler(error, dispatch);
-        });
-    }
-  }
-};
+// export const purchaseOrderHandler = (
+//   order: Order,
+//   isTest: boolean
+// ): AppThunk => (dispatch: Dispatch, getState: () => RootState) => {
+//   const user = getState().currentUser.currentUser;
+//   if (user && order.packageInfo) {
+//     // Check Errors
+//     const result = checkOrderLabelErrors(order);
+//     if (result.length > 0) {
+//       const newOrder: Order = {
+//         ...order,
+//         errors: result,
+//         labelLoading: false
+//       };
+//       dispatch(updateOrder(newOrder));
+//     } else {
+//       dispatch(updateOrder({ ...order, labelLoading: true }));
+//       axios
+//         .post(
+//           `${SERVER_ROUTES.CLIENT_SHIPMENTS}/label`,
+//           { id: order.id, isTest },
+//           {
+//             headers: {
+//               Authorization: `${user.token_type} ${user.token}`
+//             }
+//           }
+//         )
+//         .then((response) => {
+//           const resData = response.data;
+//           const newOrder: Order = {
+//             ...resData.order,
+//             errors: resData.errors || [],
+//             labelLoading: false
+//           };
+//           dispatch(updateCurrentUserBalance(resData.balance));
+//           dispatch(updateOrder(newOrder));
+//         })
+//         .catch((error) => {
+//           const newOrder: Order = {
+//             ...order,
+//             errors: [error.response.data.message],
+//             labelLoading: false
+//           };
+//           dispatch(updateOrder(newOrder));
+//           errorHandler(error, dispatch);
+//         });
+//     }
+//   }
+// };
 
 export const selectCurUser = (state: RootState): User | undefined =>
   state.currentUser.currentUser;
