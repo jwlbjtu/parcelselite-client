@@ -5,18 +5,20 @@ interface DownloadCSEButtonProps {
   label: string;
   data: any;
   fileName: string;
+  header: string | undefined;
 }
 
 const DownloadCSEButton = ({
   label,
   data,
-  fileName
+  fileName,
+  header
 }: DownloadCSEButtonProps) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const convertToCSV = (objArray: any) => {
     const array = typeof objArray !== 'object' ? JSON.parse(data) : data;
-    let str = '';
+    let str = header ? `${header}\r\n` : '';
 
     for (let i = 0; i < array.length; i += 1) {
       let line = '';

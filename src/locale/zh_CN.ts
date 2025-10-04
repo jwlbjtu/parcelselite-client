@@ -11,6 +11,7 @@ const zhCN = {
   '/labels': '面单设置',
   '/packages': '包裹设置',
   '/billing': '资费明细',
+  '/rate': '费用查询',
   // Order Page
   orders: '物流订单',
   order: '订单信息',
@@ -101,6 +102,7 @@ const zhCN = {
   accountTitle: '账号相关',
   profile: '基本资料',
   billing: '资费明细',
+  rate: '费用查询',
   curPassword: '当前密码',
   newPassword: '新密码',
   confirmPassword: '确认密码',

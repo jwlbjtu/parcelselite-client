@@ -164,7 +164,9 @@ const columns: ColumnType<ShippingRecord>[] = [
       return (
         <div>
           <div>{record.service?.name}</div>
-          <div>{`${record.trackingId}`}</div>
+          {record.labels?.map((label) => (
+            <div>{`${label.tracking}`}</div>
+          ))}
           {record.facility && <div>{`${record.facility}`}</div>}
         </div>
       );

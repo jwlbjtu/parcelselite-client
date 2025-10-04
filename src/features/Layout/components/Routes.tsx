@@ -15,6 +15,7 @@ import LabelPage from '../../Settings/Labels/pages/LabelPage';
 import PackagePage from '../../Settings/Packages/pages/PackagePage';
 import ManifestPage from '../../Shipments/pages/ManifestPage';
 import BillingPage from '../../Settings/Account/components/BillingPage';
+import ShippingRatePage from '../../Orders/pages/ShippingRatePage';
 
 const Routes = (): ReactElement => {
   const systemAccounts = useSelector(selectClientAccounts);
@@ -29,6 +30,7 @@ const Routes = (): ReactElement => {
         component={OrderDetailPage}
       />
       <Route path={UI_ROUTES.BILLING} component={BillingPage} />
+      <Route path={UI_ROUTES.RATE} component={ShippingRatePage} />
       {/* <Route
         path={`${UI_ROUTES.ORDERS}${UI_ROUTES.CSV_IMPORT}${UI_ROUTES.STEP_TWO}`}
         component={CsvImportStepTwoPage}

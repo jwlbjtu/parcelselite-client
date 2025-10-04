@@ -10,6 +10,7 @@ const enUS = {
   '/addresses': 'Addresses',
   '/labels': 'Labels',
   '/packages': 'Packages',
+  '/rate': '费用查询',
   // Order Page
   orders: 'Orders',
   order: 'order',

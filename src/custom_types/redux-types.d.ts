@@ -22,6 +22,7 @@ export interface RootState {
   settings: SettingsState;
   addresses: AddressesState;
   carriers: CarriersState;
+  rate: RateCheckState;
 }
 
 export interface I18nState {
@@ -129,4 +130,32 @@ export interface CarriersState {
   loading: boolean;
   carrierModalLoading: boolean;
   showCarrierModal: boolean;
+}
+
+export interface RateCheckState {
+  loading: boolean;
+  rates: RateInfo;
+}
+
+export interface RateInfo {
+  rate: number;
+  currency: string;
+  fee: number;
+  baseRate: number;
+  details?: any;
+}
+
+export interface UserShippingRateRequest {
+  channel: string;
+  toAddress: OrderAddress;
+  packageList: ApiPackage[];
+}
+
+export interface ApiPackage {
+  weight: number; // 重量 KG
+  length?: number; // 长 cm
+  width?: number; // 宽 cm
+  height?: number; // 高 cm
+  count: number; // 件数
+  lineItems: ApiLineItem[];
 }

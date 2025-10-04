@@ -27,7 +27,8 @@ export const UI_ROUTES = {
   CARRIERS: '/carriers',
   ADDRESSES: '/addresses',
   LABELS: '/labels',
-  PACKAGES: '/packages'
+  PACKAGES: '/packages',
+  RATE: '/rate'
 };
 
 export const SETTING_KEYS = [
@@ -45,7 +46,8 @@ export const CARRIERS = {
   UPS: 'UPS',
   FEDEX: 'FedEx',
   RUI_YUN: 'Rui Yun',
-  USPS3: 'USPS3'
+  USPS3: 'USPS3',
+  MAO_YUAN: 'Mao Yuan'
 };
 
 export const USPS_INTL_SERVICE_IDS = {

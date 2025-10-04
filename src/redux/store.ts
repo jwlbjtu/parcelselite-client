@@ -9,6 +9,7 @@ import shipmentsReducer from './shipments/shipmentSlice';
 import settingsReducer from './settings/settingSlice';
 import addressesReducer from './settings/addressSlice';
 import carriersReducer from './settings/carriersSlice';
+import rateReducer from './rate.slice';
 
 const rootReducer = combineReducers({
   i18n: i18nReducer,
@@ -18,7 +19,8 @@ const rootReducer = combineReducers({
   shipments: shipmentsReducer,
   carriers: carriersReducer,
   addresses: addressesReducer,
-  settings: settingsReducer
+  settings: settingsReducer,
+  rate: rateReducer
 });
 
 const persistConfig = {

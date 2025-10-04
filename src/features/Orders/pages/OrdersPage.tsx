@@ -1,5 +1,6 @@
 import {
   DeleteFilled,
+  DownOutlined,
   PrinterOutlined,
   SearchOutlined,
   SyncOutlined
@@ -7,8 +8,10 @@ import {
 import {
   Button,
   DatePicker,
+  Dropdown,
   Form,
   Input,
+  Menu,
   PageHeader,
   Popconfirm,
   Space,
@@ -132,6 +135,48 @@ const OrdersPage = (): ReactElement => {
     });
   };
 
+  function handleMenuClick(e: any) {
+    console.log('click', e);
+    window.open(e.key, '_blank');
+  }
+
+  function displayLablePrintButton(record: ShippingRecord) {
+    if (record.carrier === CARRIERS.MAO_YUAN) {
+      return (
+        <Dropdown
+          overlay={
+            <Menu onClick={handleMenuClick}>
+              {record.labelUrlList?.map((url, index) => (
+                <Menu.Item key={url.labelUrl}>{`打印面单${
+                  index + 1
+                }`}</Menu.Item>
+              ))}
+            </Menu>
+          }
+        >
+          <Button type="primary" icon={<PrinterOutlined />}>
+            打印面单 <DownOutlined />
+          </Button>
+        </Dropdown>
+      );
+    }
+    return (
+      <Button
+        type="primary"
+        icon={<PrinterOutlined />}
+        onClick={() =>
+          record.carrier === CARRIERS.RUI_YUN ||
+          record.carrier === CARRIERS.USPS3
+            ? opentLabelUrlHandler(record)
+            : downloadLabelsHandler(record)
+        }
+        ghost
+      >
+        打印面单
+      </Button>
+    );
+  }
+
   return (
     <div>
       <PageHeader
@@ -154,6 +199,7 @@ const OrdersPage = (): ReactElement => {
             label="导出订单"
             data={generateCSVData(orders)}
             fileName="订单记录"
+            header="序号,日期,订单号,面单号,收件人,邮编,邮寄费"
           />
         ]}
       >
@@ -178,10 +224,12 @@ const OrdersPage = (): ReactElement => {
               />
             </Form.Item>
             <Form.Item label="订单号" name="orderId">
-              <Input type="text" placeholder="订单号" />
+              <Input type="text" placeholder="订单号" style={{ width: 300 }} />
             </Form.Item>
+          </Space>
+          <Space>
             <Form.Item label="面单号" name="trackingId">
-              <Input type="text" placeholder="面单号" />
+              <Input type="text" placeholder="面单号" style={{ width: 300 }} />
             </Form.Item>
             <Form.Item label="收件人" name="name">
               <Input type="text" placeholder="收件人" />
@@ -212,21 +260,8 @@ const OrdersPage = (): ReactElement => {
             render: (labels: Label[], record: ShippingRecord) => {
               return (
                 <Space direction="vertical">
-                  {ShipmentStatus.FULFILLED === record.status && (
-                    <Button
-                      type="primary"
-                      icon={<PrinterOutlined />}
-                      onClick={() =>
-                        record.carrier === CARRIERS.RUI_YUN ||
-                        record.carrier === CARRIERS.USPS3
-                          ? opentLabelUrlHandler(record)
-                          : downloadLabelsHandler(record)
-                      }
-                      ghost
-                    >
-                      打印面单
-                    </Button>
-                  )}
+                  {ShipmentStatus.FULFILLED === record.status &&
+                    displayLablePrintButton(record)}
                   {record.forms && record.forms.length > 0 && (
                     <Button
                       type="primary"

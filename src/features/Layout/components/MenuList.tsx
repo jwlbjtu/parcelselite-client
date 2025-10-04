@@ -1,4 +1,5 @@
 import {
+  MoneyCollectOutlined,
   SettingOutlined,
   ShopOutlined,
   ShoppingOutlined
@@ -23,6 +24,11 @@ const MenuList = (): ReactElement => {
       <Menu.Item key={UI_ROUTES.BILLING} icon={<ShopOutlined />}>
         <NavLink to={UI_ROUTES.BILLING}>
           <FormattedMessage id={UI_ROUTES.BILLING} />
+        </NavLink>
+      </Menu.Item>
+      <Menu.Item key={UI_ROUTES.RATE} icon={<MoneyCollectOutlined />}>
+        <NavLink to={UI_ROUTES.RATE}>
+          <FormattedMessage id={UI_ROUTES.RATE} />
         </NavLink>
       </Menu.Item>
       <SubMenu
